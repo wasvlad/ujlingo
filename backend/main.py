@@ -4,9 +4,12 @@ from fastapi import FastAPI
 import uvicorn
 import httpx
 
+import user
+
 TRANSLATOR_URL = os.getenv("TRANSLATOR_URL")
 
 app = FastAPI()
+app.include_router(user.router, prefix="/user")
 @app.get("/")
 async def read_root():
     with httpx.Client() as client:
