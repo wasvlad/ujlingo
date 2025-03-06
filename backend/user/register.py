@@ -19,8 +19,19 @@ class UserCreate(BaseModel):
     surname: str = Field(..., min_length=2, max_length=50)
 
 
-@router.post("/register")
+class MessageResponse(BaseModel):
+    message: str
+
+class ErrorResponse(BaseModel):
+    detail: str
+
+@router.post("/register", response_model=MessageResponse, responses={
+    400: {"model": ErrorResponse, "description": "Bad Request (existing user, weak password)"},
+})
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
+    '''
+    Register a new user. Email should be confirmed by clicking on a link sent to the email.
+    '''
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -49,8 +60,14 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "User registered successfully"}
 
 
-@router.get("/confirm_email")
+@router.get("/confirm_email", response_model=MessageResponse, responses={
+    400: {"model": ErrorResponse, "description": "Bad Request (Token expired, Invalid token)"},
+    404: {"model": ErrorResponse, "description": "Not Found (User not found)"}
+})
 async def confirm_email(token: str, db: Session = Depends(get_db)):
+    '''
+    Confirm user's email.
+    '''
     secret_key = os.getenv("SECRET_KEY")
 
     try:

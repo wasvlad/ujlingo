@@ -7,8 +7,10 @@ import httpx
 import user
 
 TRANSLATOR_URL = os.getenv("TRANSLATOR_URL")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
-app = FastAPI()
+app = FastAPI(docs_url=None if ENVIRONMENT != "local" else "/docs",
+              redoc_url=None if ENVIRONMENT != "local" else "/redoc")
 app.include_router(user.router, prefix="/user")
 @app.get("/")
 async def read_root():
