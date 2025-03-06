@@ -4,9 +4,14 @@ from fastapi import FastAPI
 import uvicorn
 import httpx
 
-TRANSLATOR_URL = os.getenv("TRANSLATOR_URL")
+import user
 
-app = FastAPI()
+TRANSLATOR_URL = os.getenv("TRANSLATOR_URL")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+
+app = FastAPI(docs_url=None if ENVIRONMENT != "local" else "/docs",
+              redoc_url=None if ENVIRONMENT != "local" else "/redoc")
+app.include_router(user.router, prefix="/user")
 @app.get("/")
 async def read_root():
     with httpx.Client() as client:
