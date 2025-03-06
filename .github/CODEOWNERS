@@ -1,3 +1,4 @@
 docker-compose.yml @wasvlad
 /backend/ @wasvlad
 .github/CODEOWNERS @wasvlad
+/database/ @wasvlad
