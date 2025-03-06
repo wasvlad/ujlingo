@@ -1,9 +1,11 @@
-import os
 import re
 from datetime import datetime, timezone, timedelta
 
 import jwt
+from pydantic import BaseModel
 
+class ErrorResponse(BaseModel):
+    detail: str
 
 def is_strong_password(password: str) -> bool:
     if len(password) < 8:
