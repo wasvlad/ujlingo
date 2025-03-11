@@ -8,3 +8,7 @@ services:
   database:
     ports:
       - "5432:5432"
+
+  translator:
+    ports:
+      - "3002:3002"

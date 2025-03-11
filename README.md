@@ -14,6 +14,7 @@ TRANSLATOR_URL="http://translator:3002"
 .gitignore
 .venv
 .idea
+translator/data
 
 4) Run docker-compose up --build. When using IDE you should sometimes include docker-compose.override.yml file manually to run the project in the IDE.
 5) Open http://localhost:3001 in your browser
