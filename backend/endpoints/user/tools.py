@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime, timezone, timedelta
+from typing import Type
 
 import jwt
 from fastapi import HTTPException, Header, Depends
@@ -8,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session as DatabaseSession
 
 from database import get_db
-from database.models import Session
+from database.models import Session, User
 
 class ErrorResponse(BaseModel):
     detail: str
@@ -37,7 +38,7 @@ def generate_token(email: str,
 
 def validate_session(access_token: str = Header(...,
                                                 description="token which was received from login"),
-                     db: DatabaseSession = Depends(get_db)                     ) -> str:
+                     db: DatabaseSession = Depends(get_db)                     ) -> Type[User]:
     secret_key = os.getenv("SECRET_KEY")
     try:
         jwt.decode(access_token, secret_key, algorithms=["HS256"])
@@ -48,4 +49,11 @@ def validate_session(access_token: str = Header(...,
     session = db.query(Session).filter(Session.token == access_token).first()
     if not session.is_active:
         raise HTTPException(status_code=403, detail="Invalid token")
-    return access_token
+
+    user = db.query(User).filter(User.id == session.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.is_banned:
+        raise HTTPException(status_code=403, detail="User is banned")
+
+    return user

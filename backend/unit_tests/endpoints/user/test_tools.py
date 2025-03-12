@@ -18,11 +18,14 @@ class TestValidateSession:
 
     def test_validate_session_success(self, mock_db, mock_jwt_decode):
         mock_jwt_decode.return_value = {"email": "test@example.com"}
-        mock_db.query().filter().first.return_value = type("Session", (), {"is_active": True})
+        mock_db.query().filter().first.side_effect = [
+            type("Session", (), {"is_active": True, "user_id": 1}),
+            type("User", (), {"is_banned": False, "id": 1})
+        ]
 
         token = "valid_token"
         result = validate_session(token, mock_db)
-        assert result == token
+        assert result.id == 1
 
     def test_validate_session_expired_token(self, mock_db, mock_jwt_decode):
         mock_jwt_decode.side_effect = jwt.ExpiredSignatureError
@@ -44,10 +47,39 @@ class TestValidateSession:
 
     def test_validate_session_inactive_session(self, mock_db, mock_jwt_decode):
         mock_jwt_decode.return_value = {"email": "test@example.com"}
-        mock_db.query().filter().first.return_value = type("Session", (), {"is_active": False})
+        mock_db.query().filter().first.side_effect = [
+            type("Session", (), {"is_active": False}),
+            type("User", (), {"is_banned": False})
+        ]
 
         token = "inactive_token"
         with pytest.raises(HTTPException) as exc_info:
             validate_session(token, mock_db)
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail == "Invalid token"
+
+    def test_validate_session_user_not_found(self, mock_db, mock_jwt_decode):
+        mock_jwt_decode.return_value = {"email": "test@example.com"}
+        mock_db.query().filter().first.side_effect = [
+            type("Session", (), {"is_active": True, "user_id": 1}),
+            None
+        ]
+
+        token = "valid_token"
+        with pytest.raises(HTTPException) as exc_info:
+            validate_session(token, mock_db)
+        assert exc_info.value.status_code == 404
+        assert exc_info.value.detail == "User not found"
+
+    def test_validate_session_user_banned(self, mock_db, mock_jwt_decode):
+        mock_jwt_decode.return_value = {"email": "test@example.com"}
+        mock_db.query().filter().first.side_effect = [
+            type("Session", (), {"is_active": True, "user_id": 1}),
+            type("User", (), {"is_banned": True})
+        ]
+
+        token = "valid_token"
+        with pytest.raises(HTTPException) as exc_info:
+            validate_session(token, mock_db)
+        assert exc_info.value.status_code == 403
+        assert exc_info.value.detail == "User is banned"
