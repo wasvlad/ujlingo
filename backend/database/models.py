@@ -13,6 +13,7 @@ class User(Base):
     surname = Column(String, nullable=False)
     is_confirmed = Column(Boolean, default=False)
     is_banned = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
 
 
 class Session(Base):
