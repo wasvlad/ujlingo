@@ -1,16 +1,14 @@
-import os
-
 import jwt
 import pytest
 from fastapi import HTTPException
 from unittest.mock import patch
-from user.tools import validate_session
+from endpoints.user.tools import validate_session
 
 class TestValidateSession:
 
     @pytest.fixture
     def mock_db(self):
-        with patch("user.tools.get_db") as mock:
+        with patch("endpoints.user.tools.get_db") as mock:
             yield mock
 
     @pytest.fixture

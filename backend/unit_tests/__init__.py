@@ -1,1 +1,1 @@
-from . import user
+from .endpoints import user
