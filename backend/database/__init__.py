@@ -23,10 +23,10 @@ if ENVIRONMENT is not None:
     print("Database is up to date.")
 
     engine = create_engine(DATABASE_URL)
-    Session = sessionmaker(bind=engine)
+    DatabaseSession = sessionmaker(bind=engine)
 
 def get_db():
-    db = Session()
+    db = DatabaseSession()
     try:
         yield db  # Provide session to route
     finally:
