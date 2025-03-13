@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Rejestracja</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="background" id="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <form id="register-form" novalidate>
+    <h3>Rejestracja</h3>
+
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" placeholder="Twój email" required>
+
+    <label for="password">Hasło</label>
+    <div class="password-wrapper">
+      <input type="password" name="password" id="password" placeholder="Hasło" required>
+      <img src="../images/eye-closed.png" alt="Pokaż hasło" onclick="togglePasswordVisibility('password', this)">
+    </div>
+
+    <label for="confirm-password">Potwierdź hasło</label>
+    <div class="password-wrapper">
+      <input type="password" name="confirm-password" id="confirm-password" placeholder="Potwierdź hasło" required>
+      <img src="../images/eye-closed.png" alt="Pokaż hasło" onclick="togglePasswordVisibility('confirm-password', this)">
+    </div>
+
+    <label for="name">Imię</label>
+    <input type="text" name="name" id="name" placeholder="Imię" required>
+
+    <label for="surname">Nazwisko</label>
+    <input type="text" name="surname" id="surname" placeholder="Nazwisko" required>
+
+    <button type="submit">Zarejestruj się</button>
+
+    <p id="message"></p>
+  </form>
+
+  <script>
+    function togglePasswordVisibility(inputId, iconElement) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        iconElement.src = '../images/eye-open.png';
+      } else {
+        input.type = 'password';
+        iconElement.src = '../images/eye-closed.png';
+      }
+    }
+
+    const form = document.getElementById('register-form');
+    const message = document.getElementById('message');
+    const backendUrl = "http://host.docker.internal:3000";
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      let valid = true;
+      const inputs = form.querySelectorAll('input');
+      message.textContent = '';
+
+      inputs.forEach(input => {
+        input.classList.remove('error-border');
+        if (!input.checkValidity()) {
+          input.classList.add('error-border');
+          valid = false;
+
+          if (input.name === "email" && input.validity.typeMismatch) {
+            message.textContent = 'Email address is invalid';
+          }
+        }
+      });
+
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (password !== confirmPassword) {
+        valid = false;
+        document.getElementById('confirm-password').classList.add('error-border');
+        message.textContent = 'Hasła nie są zgodne';
+        message.style.color = 'red';
+        return;
+      }
+
+      if (!valid) {
+        if (!message.textContent) {
+          message.textContent = 'Please fill out required fields';
+        }
+        message.style.color = 'red';
+        return;
+      }
+
+      const data = {
+        email: form.email.value,
+        password: password,
+        name: form.name.value,
+        surname: form.surname.value
+      };
+
+      try {
+        const response = await fetch(`${backendUrl}/user/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=UTF-8'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          window.location.href = "confirm_email.html?notice=success";
+        } else {
+          if (result.detail && typeof result.detail === "string") {
+            message.textContent = result.detail;
+          } else if (Array.isArray(result.detail)) {
+            const messages = result.detail.map(err => {
+              const field = err?.loc?.[1] || '';
+              const msg = err?.msg || '';
+              return `${field}: ${msg}`;
+            });
+            message.textContent = messages.join(" | ");
+          } else {
+            message.textContent = 'Błąd podczas rejestracji.';
+          }
+
+          message.style.color = 'red';
+        }
+      } catch (error) {
+        console.error("Błąd połączenia:", error);
+        message.textContent = 'Błąd połączenia z backendem.';
+        message.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>
