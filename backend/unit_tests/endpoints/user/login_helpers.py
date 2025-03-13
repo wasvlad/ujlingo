@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from ..test_data import TestData
+from unit_tests.test_data import TestData
 from .register_helpers import register_user
 
 def login_user(client: TestClient, email: str=TestData.User.email, password: str=TestData.User.password):

@@ -3,8 +3,9 @@ import os
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, EmailStr
 import jwt
+from sqlalchemy.orm import Session
 
-from database import get_db, Session
+from database import get_db
 from database.models import User
 from .hashing import hash_password
 from email_service import write_email
@@ -26,9 +27,9 @@ class MessageResponse(BaseModel):
     400: {"model": ErrorResponse, "description": "Bad Request (existing user, weak password)"},
 })
 async def register_user(user: UserCreate, db: Session = Depends(get_db)):
-    '''
+    """
     Register a new user. Email should be confirmed by clicking on a link sent to the email.
-    '''
+    """
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -62,9 +63,9 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     404: {"model": ErrorResponse, "description": "Not Found (User not found)"}
 })
 async def confirm_email(token: str, db: Session = Depends(get_db)):
-    '''
+    """
     Confirm user's email.
-    '''
+    """
     secret_key = os.getenv("SECRET_KEY")
 
     try:

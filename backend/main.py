@@ -12,7 +12,7 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
 app = FastAPI(docs_url=None if ENVIRONMENT != "local" else "/docs",
               redoc_url=None if ENVIRONMENT != "local" else "/redoc")
-
+# Musialem to dodac, poniewaz backend odrzucal zapytania z frontendu przez CORS policy
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3001"],

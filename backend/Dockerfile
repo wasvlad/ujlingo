@@ -14,9 +14,9 @@ COPY alembic alembic
 COPY database database
 COPY email_service email_service
 COPY unit_tests unit_tests
-COPY user user
 COPY alembic.ini alembic.ini
 COPY main.py main.py
+COPY endpoints endpoints
 
 ENV SECRET_KEY="strong_secret_key"
 ENV PYTHONUNBUFFERED=1
