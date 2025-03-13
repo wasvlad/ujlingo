@@ -1,75 +1,145 @@
 import os
 from datetime import datetime, timezone, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 
+from endpoints.user.tools import generate_token
 from main import app
-from endpoints.user.register import generate_token
-from unit_tests.tools import clear_database
-from .register_helpers import register_user
+from database.models import User, Base
+from database import get_db, engine, DatabaseSession
 
-client = TestClient(app)
+
 
 class TestRegisterUser:
-    def test_register_user_success(self):
-        clear_database()
+    def setup_class(self):
+        self.session = DatabaseSession()
 
-        response = register_user(client)
+    @staticmethod
+    def setup_method():
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
 
-        assert response.status_code == 200
-        assert response.json() == {"message": "User registered successfully"}
+    def override_get_db(self):
+        return self.session
 
-    def test_register_user_weak_password(self):
-        clear_database()
+    @pytest.fixture
+    def client(self):
+        app.dependency_overrides[get_db] = self.override_get_db
+        return TestClient(app)
 
-        response = client.post("/user/register", json={
-            "email": "test2@example.com",
-            "password": "password123",
-            "name": "Test",
-            "surname": "User"
-        })
+    def test_register_user_success(self, client):
+        with patch("endpoints.user.register.is_strong_password", return_value=True), \
+             patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
+             patch("endpoints.user.register.generate_token", return_value="token"), \
+             patch("endpoints.user.register.write_email", return_value=None):
+            response = client.post("/user/register", json={
+                "email": "test@example.com",
+                "password": "StrongPassword123!",
+                "name": "Test",
+                "surname": "User"
+            })
+            assert response.status_code == 200
+            assert response.json() == {"message": "User registered successfully"}
 
-        assert response.status_code == 400
-        assert response.json() == {"detail": "Password is not strong enough"}
+            # Verify that the user has been added to the database
+            db = next(get_db())
+            added_user = db.query(User).filter(User.email == "test@example.com").first()
+            assert added_user is not None
+            assert added_user.email == "test@example.com"
+            assert added_user.name == "Test"
+            assert added_user.surname == "User"
+            assert added_user.is_confirmed is False
+            assert added_user.password_hash == "hashed_password"
 
-    def test_register_user_email_already_registered(self):
-        clear_database()
-        response = register_user(client)
-        assert response.status_code == 200
+    def test_register_user_weak_password(self, client):
+        with patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
+             patch("endpoints.user.register.generate_token", return_value="token"), \
+             patch("endpoints.user.register.write_email", return_value=None):
+            response = client.post("/user/register", json={
+                "email": "test@example.com",
+                "password": "weak_password",
+                "name": "Test",
+                "surname": "User"
+            })
+            assert response.status_code == 400
+            assert response.json() == {"detail": "Password is not strong enough"}
 
-        response = register_user(client)
+            # Verify that the user has been added to the database
+            db = next(get_db())
+            added_user = db.query(User).filter(User.email == "test@example.com").first()
+            assert added_user is None
 
-        assert response.status_code == 400
-        assert response.json() == {"detail": "Email already registered"}
+    def test_register_user_email_already_registered(self, client):
+        db = next(get_db())
+        db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
+        db.commit()
+        with patch("endpoints.user.register.generate_token", return_value="token"), \
+                patch("endpoints.user.register.write_email", return_value=None):
+            response = client.post("/user/register", json={
+                "email": "test@example.com",
+                "password": "StrongPassword123!",
+                "name": "Test",
+                "surname": "User"
+            })
+            assert response.status_code == 400
+            assert response.json() == {"detail": "Email already registered"}
+
+            # Verify that the user has been added to the database
+            db = next(get_db())
+            added_user = db.query(User).filter(User.email == "test@example.com").first()
+            assert added_user is not None
+            assert added_user.email == "test@example.com"
+
+    def teardown_class(self):
+        self.session.close()
 
 
 class TestConfirmEmail:
-    def test_confirm_email_success(self):
-        clear_database()
+    def setup_class(self):
+        self.session = DatabaseSession()
 
-        register_user(client)
+    @pytest.fixture
+    def client(self):
+        app.dependency_overrides[get_db] = self.override_get_db
+        return TestClient(app)
+
+    @staticmethod
+    def setup_method(self):
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+        db = next(get_db())
+        db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
+        db.commit()
+
+    def override_get_db(self):
+        return self.session
+
+    def teardown_class(self):
+        self.session.close()
+
+    def test_confirm_email_success(self, client):
 
         token = generate_token("test@example.com", os.getenv("SECRET_KEY"))
 
         response = client.get(f"/user/confirm_email?token={token}")
 
+        print(response.json())
         assert response.status_code == 200
         assert response.json() == {"message": "Email confirmed successfully"}
+        db = next(get_db())
+        user = db.query(User).filter(User.email == "test@example.com").first()
+        assert user.is_confirmed is True
 
-    def test_confirm_email_invalid_token(self):
-        clear_database()
-
-        register_user(client)
+    def test_confirm_email_invalid_token(self, client):
 
         response = client.get("/user/confirm_email?token=invalid")
 
         assert response.status_code == 400
         assert response.json() == {"detail": "Invalid token"}
 
-    def test_confirm_email_expired_token(self):
-        clear_database()
-
-        register_user(client)
+    def test_confirm_email_expired_token(self, client):
 
         token = generate_token("test@example.com", secret_key=os.getenv("SECRET_KEY"),
                                expiration_date=datetime.now(timezone.utc) - timedelta(minutes=5))
@@ -79,11 +149,7 @@ class TestConfirmEmail:
         assert response.status_code == 400
         assert response.json() == {"detail": "Token expired"}
 
-    def test_confirm_email_invalid_email(self):
-        clear_database()
-
-        register_user(client)
-
+    def test_confirm_email_invalid_email(self, client):
         token = generate_token("invalid@example.com", secret_key=os.getenv("SECRET_KEY"))
 
         response = client.get(f"/user/confirm_email?token={token}")
