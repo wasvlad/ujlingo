@@ -4,8 +4,8 @@ from datetime import datetime, timezone, timedelta
 from fastapi.testclient import TestClient
 
 from main import app
-from user.register import generate_token
-from ..tools import clear_database
+from endpoints.user.register import generate_token
+from unit_tests.tools import clear_database
 from .register_helpers import register_user
 
 client = TestClient(app)

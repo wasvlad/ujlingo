@@ -13,6 +13,7 @@ class User(Base):
     surname = Column(String, nullable=False)
     is_confirmed = Column(Boolean, default=False)
     is_banned = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
 
 
 class Session(Base):
@@ -22,3 +23,10 @@ class Session(Base):
     token = Column(String, unique=True, nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     is_active = Column(Boolean, default=True)
+
+
+class WordsToUa(Base):
+    __tablename__ = "words_to_ua"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    original_word = Column(String, nullable=False)
+    translated_word = Column(String, nullable=False)

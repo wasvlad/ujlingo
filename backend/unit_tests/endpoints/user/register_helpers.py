@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from database.models import User
-from ..test_data import TestData
+from unit_tests.test_data import TestData
 from database import get_db
 
 def register_user(client: TestClient, email: str=TestData.User.email,

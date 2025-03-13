@@ -1,10 +1,10 @@
 from fastapi.testclient import TestClient
 
 from main import app
-from ..tools import clear_database
+from unit_tests.tools import clear_database
 from .login_helpers import login_user
 from .register_helpers import confirm_email
-from ..test_data import TestData
+from unit_tests.test_data import TestData
 
 client = TestClient(app)
 
