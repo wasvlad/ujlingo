@@ -1,6 +1,7 @@
 import os
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import httpx
 
@@ -9,8 +10,20 @@ import user
 TRANSLATOR_URL = os.getenv("TRANSLATOR_URL")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
-app = FastAPI(docs_url=None if ENVIRONMENT != "local" else "/docs",
-              redoc_url=None if ENVIRONMENT != "local" else "/redoc")
+# Musialem dodac bo CORS
+app = FastAPI(
+    docs_url=None if ENVIRONMENT != "local" else "/docs",
+    redoc_url=None if ENVIRONMENT != "local" else "/redoc"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(user.router, prefix="/user")
 @app.get("/")
 async def read_root():
