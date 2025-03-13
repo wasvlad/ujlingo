@@ -1,39 +1,68 @@
+import pytest
 from fastapi.testclient import TestClient
 
+from database import DatabaseSession, get_db, engine
+from database.models import Base, User, Session
 from main import app
-from unit_tests.tools import clear_database
-from .login_helpers import login_user
-from .register_helpers import confirm_email
-from unit_tests.test_data import TestData
+from endpoints.user.hashing import hash_password
 
 client = TestClient(app)
 
 class TestLoginUser:
-    def test_login_user_success(self):
-        clear_database()
+    def setup_class(self):
+        self.session = DatabaseSession()
 
-        response = login_user(client)
+    @pytest.fixture
+    def client(self):
+        app.dependency_overrides[get_db] = self.override_get_db
+        return TestClient(app)
+
+    @staticmethod
+    def setup_method():
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+        db = next(get_db())
+        db.add(User(email="test@example.com", name="Test", surname="User",
+                    password_hash=hash_password("password"),
+                    is_confirmed=True))
+        db.commit()
+
+    def override_get_db(self):
+        return self.session
+
+    def teardown_class(self):
+        self.session.close()
+
+    def test_login_user_success(self, client):
+
+        response = client.post("/user/login", json={
+            "email": "test@example.com",
+            "password": "password",
+        })
 
         assert response.status_code == 200
         assert response.json().get("access_token", None) is not None
+        db = next(get_db())
+        user = db.query(User).filter(User.email == "test@example.com").first()
+        session = db.query(Session).filter(Session.user_id == user.id).first()
+        assert session is not None
+        assert session.is_active is True
 
     def test_login_wrong_email(self):
-        clear_database()
-
-        confirm_email(client)
         response = client.post("/user/login", json={
             "email": "wrong@email.com",
-            "password": TestData.User.password,
+            "password": "password",
         })
         assert response.status_code == 400
         assert response.json() == {"detail": "Invalid email or password"}
+        db = next(get_db())
+        user = db.query(User).filter(User.email == "test@example.com").first()
+        session = db.query(Session).filter(Session.user_id == user.id).first()
+        assert session is None
 
     def test_login_wrong_password(self):
-        clear_database()
-
-        confirm_email(client)
         response = client.post("/user/login", json={
-            "email": TestData.User.email,
+            "email": "test@example.com",
             "password": "wrong_password",
         })
 

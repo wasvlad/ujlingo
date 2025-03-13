@@ -1,11 +1,10 @@
 import pytest
-from httpx import Response
-from endpoints.admin.data_migration import words_translations_to_pairs, migrate_words_to_ua
+from endpoints.admin.data_migration import words_translations_to_pairs
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock, Mock
 from main import app
-from database.models import User
-from database import get_db
+from database.models import User, Base, WordsToUa
+from database import get_db, DatabaseSession, engine
 from endpoints.admin.tools import validate_admin_session
 
 class TestWordsTranslationsToPairs:
@@ -31,19 +30,38 @@ def override_get_db():
     return AsyncMock()
 
 class TestMigrateWordsToUa:
-
-    @pytest.fixture
-    def mock_db(self):
-        with patch("endpoints.user.tools.get_db") as mock:
-            yield mock
+    def setup_class(self):
+        self.session = DatabaseSession()
 
     @pytest.fixture
     def client(self):
+        app.dependency_overrides[get_db] = self.override_get_db
         app.dependency_overrides[validate_admin_session] = override_validate_admin_session
         return TestClient(app)
 
+    @staticmethod
+    def setup_method(self):
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+        db = next(get_db())
+        db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
+        db.commit()
+
+    def override_get_db(self):
+        return self.session
+
+    def teardown_class(self):
+        self.session.close()
+
     @pytest.mark.asyncio
     async def test_migrate_words_to_ua_success(self, client):
+        db = next(get_db())
+        db.add(WordsToUa(original_word="bye", translated_word="Прощавай"))
+        db.add(WordsToUa(original_word="bye", translated_word="До побачення"))
+        db.add(WordsToUa(original_word="hello", translated_word="Привіт"))
+        db.add(WordsToUa(original_word="hello", translated_word="Алло"))
+        db.add(WordsToUa(original_word="hello", translated_word="Шо ти"))
+        db.commit()
         mock_response = Mock()
         mock_response.json.return_value = {"hello": ["привіт", "алло"], "world": ["світ", "планета"]}
         mock_response.status_code = 200
@@ -53,14 +71,7 @@ class TestMigrateWordsToUa:
                                    headers={"content-type": "application/json", "access-token": "access_token"})
             assert response.status_code == 200
             assert response.json() == {"message": "Operation successful"}
-
-    # @pytest.mark.asyncio
-    # async def test_migrate_words_to_ua_failure(self, client):
-    #     with patch("endpoints.admin.data_migration.httpx.AsyncClient.get",
-    #                return_value=Response(404)), \
-    #             patch("endpoints.admin.data_migration.validate_admin_session",
-    #                   return_value=User(id=1, is_admin=True)), \
-    #             patch("endpoints.admin.data_migration.get_db", return_value=AsyncMock()):
-    #         response = client.post("/admin/migrate-words-to-ua",
-    #                                headers={"content-type": "application/json", "access_token": "access_token"},)
-    #         assert response.status_code == 404
+        words = db.query(WordsToUa).all()
+        expected = [("hello", "привіт"), ("hello", "алло"), ("world", "світ"), ("world", "планета")]
+        for word in words:
+            assert (word.original_word, word.translated_word) in expected
