@@ -55,5 +55,7 @@ def validate_session(access_token: str = Header(...,
         raise HTTPException(status_code=404, detail="User not found")
     if user.is_banned:
         raise HTTPException(status_code=403, detail="User is banned")
+    if not user.is_confirmed:
+        raise HTTPException(status_code=403, detail="Email is not confirmed")
 
     return user

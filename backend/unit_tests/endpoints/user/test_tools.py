@@ -20,7 +20,7 @@ class TestValidateSession:
         mock_jwt_decode.return_value = {"email": "test@example.com"}
         mock_db.query().filter().first.side_effect = [
             type("Session", (), {"is_active": True, "user_id": 1}),
-            type("User", (), {"is_banned": False, "id": 1})
+            type("User", (), {"is_banned": False, "id": 1, "is_confirmed": True})
         ]
 
         token = "valid_token"
@@ -83,3 +83,16 @@ class TestValidateSession:
             validate_session(token, mock_db)
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail == "User is banned"
+
+    def test_validate_session_email_not_confirmed(self, mock_db, mock_jwt_decode):
+        mock_jwt_decode.return_value = {"email": "test@example.com"}
+        mock_db.query().filter().first.side_effect = [
+            type("Session", (), {"is_active": True, "user_id": 1}),
+            type("User", (), {"is_banned": False, "is_confirmed": False})
+        ]
+
+        token = "valid_token"
+        with pytest.raises(HTTPException) as exc_info:
+            validate_session(token, mock_db)
+        assert exc_info.value.status_code == 403
+        assert exc_info.value.detail == "Email is not confirmed"
