@@ -48,3 +48,28 @@ class WordTranslation(Base):
 
     word_en = relationship('WordEn')
     word_ua = relationship('WordUa')
+
+
+class WordTranslationKnowledge(Base):
+    __tablename__ = "word_translation_knowledge"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    word_translation_id = Column(Integer, ForeignKey('word_translation.id', ondelete='CASCADE'), nullable=False)
+    knowledge = Column(Integer, nullable=False)
+
+    word_translation = relationship('WordTranslation')
+    user = relationship('User')
+
+
+class LastWordTranslationRequest(Base):
+    __tablename__ = "last_word_translation_request"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False, unique=True)
+    knowledge_id = Column(Integer,
+                          ForeignKey('word_translation_knowledge.id', ondelete='CASCADE'),
+                          nullable=False)
+
+    knowledge = relationship('WordTranslationKnowledge')
+    user = relationship('User')
