@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 
@@ -25,8 +25,26 @@ class Session(Base):
     is_active = Column(Boolean, default=True)
 
 
-class WordsToUa(Base):
-    __tablename__ = "words_to_ua"
+class WordUa(Base):
+    __tablename__ = "word_ua"
+
     id = Column(Integer, primary_key=True, autoincrement=True)
-    original_word = Column(String, nullable=False)
-    translated_word = Column(String, nullable=False)
+    word = Column(String, unique=True, nullable=False)
+
+
+class WordEn(Base):
+    __tablename__ = "word_en"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    word = Column(String, unique=True, nullable=False)
+
+
+class WordTranslation(Base):
+    __tablename__ = "word_translation"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    word_ua_id = Column(Integer, ForeignKey('word_ua.id', ondelete='CASCADE'), nullable=False)
+    word_en_id = Column(Integer, ForeignKey('word_en.id', ondelete='CASCADE'), nullable=False)
+
+    word_en = relationship('WordEn')
+    word_ua = relationship('WordUa')
