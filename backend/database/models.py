@@ -56,7 +56,7 @@ class WordTranslationKnowledge(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     word_translation_id = Column(Integer, ForeignKey('word_translation.id', ondelete='CASCADE'), nullable=False)
-    knowledge = Column(Integer, nullable=False)
+    knowledge = Column(Integer, nullable=False, default=0)
 
     word_translation = relationship('WordTranslation')
     user = relationship('User')

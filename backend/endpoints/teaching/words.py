@@ -18,7 +18,7 @@ class WordMaterialResponse(BaseModel):
     word: str = Field(..., description="Word to translate")
 
 @router.get("/random-word", response_model=WordMaterialResponse)
-async def random_word(request: MaterialRequest, user: User = Depends(validate_session), db = Depends(get_db)):
+async def random_word(translate_from: Literal["en", "ua"], user: User = Depends(validate_session), db = Depends(get_db)):
     '''
     This function returns a random word from database to translate.
     '''
@@ -26,15 +26,16 @@ async def random_word(request: MaterialRequest, user: User = Depends(validate_se
     word_knowledge = (db.query(Knowledge).
                       filter(Knowledge.word_translation_id == random_translation.id).first())
     if word_knowledge is None:
-        word_knowledge = Knowledge(word_translation_id=random_translation.id, user_id=user.id)
+        word_knowledge = Knowledge(word_translation_id=random_translation.id, user_id=user.id, knowledge=0)
         db.add(word_knowledge)
+        db.commit()
     else:
         word_knowledge.knowledge -= 10
     last_request = LastWordTranslationRequest(knowledge_id=word_knowledge.id, user_id=user.id)
     db.add(last_request)
     db.commit()
 
-    return {"word": random_translation.word_en if request.translate_from == "en" else random_translation.word_ua}
+    return {"word": random_translation.word_en.word if translate_from == "en" else random_translation.word_ua.word}
 
 
 class MaterialValidationRequest(BaseModel):
@@ -48,17 +49,17 @@ class TranslationValidationResponse(BaseModel):
 
 def possible_translations(word: str, translate_from: Literal["en", "ua"], db: DatabaseSession):
     if translate_from == "en":
-        word_translations = db.query(WordTranslation).filter(WordTranslation.word_en == word).order_by(func.random()).top(5)
-        return [word_translation.word_ua for word_translation in word_translations]
+        word_translations = db.query(WordTranslation).filter(WordTranslation.word_en.has(word=word)).order_by(func.random()).limit(5)
+        return [word_translation.word_ua.word for word_translation in word_translations]
     else:
-        word_translations = db.query(WordTranslation).filter(WordTranslation.word_ua == word).order_by(func.random()).top(5)
-        return [word_translation.word_en for word_translation in word_translations]
+        word_translations = db.query(WordTranslation).filter(WordTranslation.word_ua.has(word=word)).order_by(func.random()).limit(5)
+        return [word_translation.word_en.word for word_translation in word_translations]
 
 def word_incorrect(user: User):
     db = next(get_db())
     last_request = db.query(LastWordTranslationRequest).filter(LastWordTranslationRequest.user_id == user.id).first()
     knowledge = last_request.knowledge
-    knowledge.knowledge -= 10
+    knowledge.knowledge = max(0, knowledge.knowledge - 10)
     db.commit()
 
 @router.post("/random-word", response_model=TranslationValidationResponse)
@@ -82,29 +83,35 @@ async def random_word_validation(request: MaterialValidationRequest, user: User 
     if request.translate_from == "en" and word_ua is None:
         word_incorrect(user)
         response = TranslationValidationResponse(is_correct=False, possible_answers=possible_answers)
+        db.delete(last_request)
+        db.commit()
         return response
     elif word_ua is None:
         word_incorrect(user)
         response = TranslationValidationResponse(is_correct=False, possible_answers=possible_answers)
+        db.delete(last_request)
+        db.commit()
         return response
-    word_translation = db.query(WordTranslation).filter(WordTranslation.word_en == request.word_original,
-                                                        WordTranslation.word_ua == request.word_translated).first()
+    word_translation = db.query(WordTranslation).filter(WordTranslation.word_en.has(word=request.word_original),
+                                                        WordTranslation.word_ua.has(word=request.word_translated)).first()
     if word_translation is None:
         word_incorrect(user)
         response = TranslationValidationResponse(is_correct=False, possible_answers=possible_answers)
+        db.delete(last_request)
+        db.commit()
         return response
 
-    last_request = db.query(LastWordTranslationRequest).filter(
-        LastWordTranslationRequest.user_id == user.id).first()
     knowledge = last_request.knowledge
-    knowledge.knowledge += 10
+    knowledge.knowledge = min(100, knowledge.knowledge + 10)
     knowledge_added = (db.query(Knowledge).
                        filter(Knowledge.word_translation_id == word_translation.id and Knowledge.user_id == user.id)
                        .first())
     if knowledge_added is None:
         knowledge_added = Knowledge(word_translation_id=word_translation.id, user_id=user.id)
         db.add(knowledge_added)
-    knowledge_added.knowledge += 10
+    knowledge_added.knowledge = min(100, knowledge_added.knowledge + 10)
     db.commit()
     response = TranslationValidationResponse(is_correct=True, possible_answers=possible_answers)
+    db.delete(last_request)
+    db.commit()
     return response
