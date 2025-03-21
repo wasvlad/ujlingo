@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, validates
 
 DeclarativeBase = declarative_base()
 
@@ -45,3 +45,11 @@ class WordTranslation(Base):
 
     word_original = relationship('Word', foreign_keys=[word_original_id])
     word_translated = relationship('Word', foreign_keys=[word_translated_id])
+
+    @validates('word_original', 'word_translated')
+    def validate_different_languages(self, key, value):
+        if key == 'word_original' and self.word_translated and value.language == self.word_translated.language:
+            raise ValueError("word_original and word_translated must be in different languages")
+        if key == 'word_translated' and self.word_original and value.language == self.word_original.language:
+            raise ValueError("word_original and word_translated must be in different languages")
+        return value
