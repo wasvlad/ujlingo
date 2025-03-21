@@ -5,7 +5,7 @@ const token = urlParams.get('token');
 const notice = urlParams.get('notice');
 
 if (notice === 'success') {
-  message.textContent = "Rejestracja zakończona sukcesem. Sprawdź swoją skrzynkę e-mail i kliknij link aktywacyjny.";
+  message.textContent = "Registration completed successfully. Please check your email inbox and click the activation link.";
   message.style.color = 'green';
 } else if (token) {
   fetch(`/api/user/confirm_email?token=${encodeURIComponent(token)}`)
@@ -13,20 +13,19 @@ if (notice === 'success') {
       const result = await response.json();
 
       if (response.ok) {
-        message.textContent = result.message || "E-mail został pomyślnie potwierdzony.";
+        message.textContent = result.message || "E-mail has been successfully confirmed.";
         message.style.color = 'green';
       } else {
-        message.textContent = result.detail || "Nie udało się potwierdzić e-maila.";
+        message.textContent = result.detail || "E-mail confirmation failed.";
         message.style.color = 'red';
       }
     })
     .catch(error => {
-      console.error("Błąd połączenia:", error);
-      message.textContent = "Błąd połączenia z serwerem.";
+      console.error("Connection error:", error);
+      message.textContent = "Connection to the server failed.";
       message.style.color = 'red';
     });
 } else {
-  // Brak tokena i brak notice
-  message.textContent = "Nieprawidłowy dostęp do strony.";
+  message.textContent = "Invalid access to the page.";
   message.style.color = 'red';
 }
