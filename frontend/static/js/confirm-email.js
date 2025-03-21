@@ -1,0 +1,32 @@
+const message = document.getElementById('message');
+
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token');
+const notice = urlParams.get('notice');
+
+if (notice === 'success') {
+  message.textContent = "Rejestracja zakończona sukcesem. Sprawdź swoją skrzynkę e-mail i kliknij link aktywacyjny.";
+  message.style.color = 'green';
+} else if (token) {
+  fetch(`/api/user/confirm_email?token=${encodeURIComponent(token)}`)
+    .then(async response => {
+      const result = await response.json();
+
+      if (response.ok) {
+        message.textContent = result.message || "E-mail został pomyślnie potwierdzony.";
+        message.style.color = 'green';
+      } else {
+        message.textContent = result.detail || "Nie udało się potwierdzić e-maila.";
+        message.style.color = 'red';
+      }
+    })
+    .catch(error => {
+      console.error("Błąd połączenia:", error);
+      message.textContent = "Błąd połączenia z serwerem.";
+      message.style.color = 'red';
+    });
+} else {
+  // Brak tokena i brak notice
+  message.textContent = "Nieprawidłowy dostęp do strony.";
+  message.style.color = 'red';
+}
