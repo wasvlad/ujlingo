@@ -66,18 +66,11 @@ async def migrate_words(user: User = Depends(validate_admin_session),
         word_translated = word_translation.word_translated
 
         if word_original.language == "en" and word_translated.language == "ua":
-            word_en = word_original.word
-            word_ua = word_translated.word
+            db.delete(word_translation)
         elif word_original.language == "ua" and word_translated.language == "en":
-            word_en = word_translated.word
-            word_ua = word_original.word
-        else:
-            continue
-
-        if (word_en, word_ua) not in data_converted:
             db.delete(word_translation)
         else:
-            data_converted.remove((word_en, word_ua))
+            continue
 
     for word_en, word_ua in data_converted:
         word_en_db = db.query(Word).filter(Word.word == word_en, Word.language == "en").first()
@@ -86,17 +79,10 @@ async def migrate_words(user: User = Depends(validate_admin_session),
         word_translation.word_original_id = word_en_db.id
         word_translation.word_translated_id = word_ua_db.id
         db.add(word_translation)
-        db.commit()
         word_translation = WordTranslation()
         word_translation.word_original_id = word_ua_db.id
         word_translation.word_translated_id = word_en_db.id
         db.add(word_translation)
-        db.commit()
-        word_translation = WordTranslation()
-        word_translation.word_original_id = word_ua_db.id
-        word_translation.word_translated_id = word_ua_db.id
-        db.add(word_translation)
-        db.commit()
     db.commit()
 
     return {"message": "Words migrated successfully"}

@@ -1,15 +1,17 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, orm
 from sqlalchemy.orm import declarative_base, relationship, validates
 
 DeclarativeBase = declarative_base()
 
+
 class Base(DeclarativeBase):
-    __abstract__ = True # does not affect subclasses
+    __abstract__ = True  # does not affect subclasses
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
+
 class User(Base):
-    __tablename__ = "my_user" # changed to my_user to avoid conflict with the built-in User model
+    __tablename__ = "my_user"  # changed to my_user to avoid conflict with the built-in User model
 
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
@@ -45,11 +47,3 @@ class WordTranslation(Base):
 
     word_original = relationship('Word', foreign_keys=[word_original_id])
     word_translated = relationship('Word', foreign_keys=[word_translated_id])
-
-    @validates('word_original', 'word_translated')
-    def validate_different_languages(self, key, value):
-        if key == 'word_original' and self.word_translated and value.language == self.word_translated.language:
-            raise ValueError("word_original and word_translated must be in different languages")
-        if key == 'word_translated' and self.word_original and value.language == self.word_original.language:
-            raise ValueError("word_original and word_translated must be in different languages")
-        return value
