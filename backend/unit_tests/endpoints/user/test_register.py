@@ -11,22 +11,16 @@ from database.models import User, Base
 from database import get_db, engine, DatabaseSession
 
 
-
 class TestRegisterUser:
-    def setup_class(self):
-        self.session = DatabaseSession()
 
     @staticmethod
     def setup_method():
+        DatabaseSession.close_all()
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
 
-    def override_get_db(self):
-        return self.session
-
     @pytest.fixture
     def client(self):
-        app.dependency_overrides[get_db] = self.override_get_db
         return TestClient(app)
 
     def test_register_user_success(self, client):
@@ -92,32 +86,21 @@ class TestRegisterUser:
             assert added_user is not None
             assert added_user.email == "test@example.com"
 
-    def teardown_class(self):
-        self.session.close()
-
 
 class TestConfirmEmail:
-    def setup_class(self):
-        self.session = DatabaseSession()
 
     @pytest.fixture
     def client(self):
-        app.dependency_overrides[get_db] = self.override_get_db
         return TestClient(app)
 
     @staticmethod
-    def setup_method(self):
+    def setup_method():
+        DatabaseSession.close_all()
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
         db = next(get_db())
         db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
         db.commit()
-
-    def override_get_db(self):
-        return self.session
-
-    def teardown_class(self):
-        self.session.close()
 
     def test_confirm_email_success(self, client):
 

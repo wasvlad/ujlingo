@@ -30,28 +30,20 @@ def override_get_db():
     return AsyncMock()
 
 class TestMigrateWords:
-    def setup_class(self):
-        self.session = DatabaseSession()
 
     @pytest.fixture
     def client(self):
-        app.dependency_overrides[get_db] = self.override_get_db
         app.dependency_overrides[validate_admin_session] = override_validate_admin_session
         return TestClient(app)
 
     @staticmethod
-    def setup_method(self):
+    def setup_method():
+        DatabaseSession.close_all()
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
         db = next(get_db())
         db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
         db.commit()
-
-    def override_get_db(self):
-        return self.session
-
-    def teardown_class(self):
-        self.session.close()
 
     @pytest.mark.asyncio
     async def test_migrate_words_success(self, client):

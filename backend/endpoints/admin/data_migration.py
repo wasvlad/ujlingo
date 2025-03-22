@@ -57,7 +57,10 @@ async def migrate_words(user: User = Depends(validate_admin_session),
 
     db.commit()
 
-    word_translations = db.query(WordTranslation).options(joinedload(WordTranslation.word_translated)).all()
+    word_translations = db.query(WordTranslation).options(
+        joinedload(WordTranslation.word_original),
+        joinedload(WordTranslation.word_translated)
+    ).all()
     for word_translation in word_translations:
         word_original = word_translation.word_original
         word_translated = word_translation.word_translated
@@ -83,10 +86,17 @@ async def migrate_words(user: User = Depends(validate_admin_session),
         word_translation.word_original_id = word_en_db.id
         word_translation.word_translated_id = word_ua_db.id
         db.add(word_translation)
+        db.commit()
         word_translation = WordTranslation()
         word_translation.word_original_id = word_ua_db.id
         word_translation.word_translated_id = word_en_db.id
         db.add(word_translation)
+        db.commit()
+        word_translation = WordTranslation()
+        word_translation.word_original_id = word_ua_db.id
+        word_translation.word_translated_id = word_ua_db.id
+        db.add(word_translation)
+        db.commit()
     db.commit()
 
     return {"message": "Words migrated successfully"}

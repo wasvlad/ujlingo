@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from database import DatabaseSession, get_db, engine
+from database import get_db, engine, DatabaseSession
 from database.models import Base, User, Session
 from main import app
 from endpoints.user.hashing import hash_password
@@ -9,16 +9,14 @@ from endpoints.user.hashing import hash_password
 client = TestClient(app)
 
 class TestLoginUser:
-    def setup_class(self):
-        self.session = DatabaseSession()
 
     @pytest.fixture
     def client(self):
-        app.dependency_overrides[get_db] = self.override_get_db
         return TestClient(app)
 
     @staticmethod
     def setup_method():
+        DatabaseSession.close_all()
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
         db = next(get_db())
@@ -26,12 +24,6 @@ class TestLoginUser:
                     password_hash=hash_password("password"),
                     is_confirmed=True))
         db.commit()
-
-    def override_get_db(self):
-        return self.session
-
-    def teardown_class(self):
-        self.session.close()
 
     def test_login_user_success(self, client):
 
