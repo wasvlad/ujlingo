@@ -39,5 +39,11 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT}
 
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    restart: always
+    command: [ "redis-server", "--port", "3003", "--save", "''", "--appendonly", "no" ]
+
 volumes:
   postgres_data:
