@@ -8,7 +8,8 @@ import os
 from database import get_db
 from database.models import User, Session as UserSession
 from .hashing import verify_password
-from .tools import generate_token, ErrorResponse
+from .tools import generate_token
+from ..tools import ErrorResponse
 
 router = APIRouter()
 

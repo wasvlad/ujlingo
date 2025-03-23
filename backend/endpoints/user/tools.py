@@ -5,14 +5,11 @@ from typing import Type
 
 import jwt
 from fastapi import HTTPException, Header, Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session as DatabaseSession
 
 from database import get_db
 from database.models import Session, User
 
-class ErrorResponse(BaseModel):
-    detail: str
 
 def is_strong_password(password: str) -> bool:
     if len(password) < 8:

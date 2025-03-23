@@ -17,6 +17,7 @@ COPY unit_tests unit_tests
 COPY alembic.ini alembic.ini
 COPY main.py main.py
 COPY endpoints endpoints
+COPY test_system test_system
 
 ENV SECRET_KEY="strong_secret_key"
 ENV PYTHONUNBUFFERED=1

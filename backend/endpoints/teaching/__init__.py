@@ -1,7 +1,5 @@
 from fastapi import APIRouter
-
-from . import words
-
+from . import random
 
 router = APIRouter()
-router.include_router(words.router)
+router.include_router(random.router, prefix="/random")
