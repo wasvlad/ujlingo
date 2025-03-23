@@ -10,3 +10,7 @@ services:
   translator:
     ports:
       - "3002:3002"
+
+  redis:
+    ports:
+      - "3003:3003"

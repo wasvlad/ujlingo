@@ -1,8 +1,11 @@
 import os
+import pickle
 
+import redis
 from fastapi import FastAPI
 import uvicorn
 import httpx
+from redis import Redis
 
 import endpoints
 from database import get_db
@@ -11,6 +14,8 @@ from endpoints.user.hashing import hash_password
 
 TRANSLATOR_URL = os.getenv("TRANSLATOR_URL")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+os.environ['REDIS_HOST'] = 'redis'
+os.environ['REDIS_PORT'] = '3003'
 
 db = next(get_db())
 root_user = db.query(User).filter(User.email == "root@company.com").first()
