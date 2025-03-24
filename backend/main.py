@@ -1,11 +1,8 @@
 import os
-import pickle
 
-import redis
 from fastapi import FastAPI
 import uvicorn
 import httpx
-from redis import Redis
 
 import endpoints
 from database import get_db

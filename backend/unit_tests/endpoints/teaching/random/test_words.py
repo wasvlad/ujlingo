@@ -31,7 +31,7 @@ class TestWordsTesting:
         add_word_translation(db=self.db, word_original=self.word_original, word_translated=self.word_translated,
                              word_translation=self.word_translation)
 
-    def tear_down_method(self):
+    def teardown_method(self):
         r = init_redis()
         res = r.delete(f"user:{1}:test")
 
@@ -46,14 +46,14 @@ class TestWordsTesting:
             assert result.json().get("question", None) is not None
             logging.info("Got question: " + result.json().get("question"))
             result = client.post("/teaching/random/words/answer_question",
-                                 json={"answer": self.word_translated})
+                                 json={"answer": self.word_translated.word})
             assert result.status_code == 200
             assert result.json().get("is_correct") is True
         result = client.get("/teaching/random/words/get_question")
         assert result.status_code == 200
         assert result.json().get("message", None) is not None
         result = client.post("/teaching/random/words/answer_question",
-                             json={"answer": self.word_translated})
+                             json={"answer": self.word_translated.word})
         assert result.status_code == 400
         assert result.json() == {"detail": "Test session is not initialized"}
 
@@ -72,7 +72,7 @@ class TestWordsTesting:
         assert result.status_code == 400
         assert result.json() == {"detail": "Test session is not initialized"}
         result = client.post("/teaching/random/words/answer_question",
-                             json={"answer": self.word_translated})
+                             json={"answer": self.word_translated.word})
         assert result.status_code == 400
         assert result.json() == {"detail": "Test session is not initialized"}
 
@@ -86,6 +86,6 @@ class TestWordsTesting:
             assert result.status_code == 200
             assert result.json().get("is_correct") is False
         result = client.post("/teaching/random/words/answer_question",
-                             json={"answer": self.word_translated})
+                             json={"answer": self.word_translated.word})
         assert result.status_code == 400
         assert result.json() == {"detail": "Test is finished"}

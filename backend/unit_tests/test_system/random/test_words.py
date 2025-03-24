@@ -61,6 +61,18 @@ class TestWordTranslationsTestBuilder:
         with pytest.raises(NoQuestionsException):
             test.give_answer("answer")
 
+    def test_ok2(self):
+        test = self.generator.build(User())
+        for i in range(10):
+            question = test.get_question()
+            assert question.question == f"Translate the word: {self.word_original.word}"
+            result = test.give_answer(self.word_translated.word)
+            assert result.is_correct is True
+            assert result.correct_answer == self.word_translated.word
+        assert test.get_question() is None
+        with pytest.raises(NoQuestionsException):
+            test.give_answer("answer")
+
     def test_wrong(self):
         test = self.generator.build(User())
         for i in range(10):
