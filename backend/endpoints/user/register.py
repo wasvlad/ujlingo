@@ -9,7 +9,8 @@ from database import get_db
 from database.models import User
 from .hashing import hash_password
 from email_service import write_email
-from .tools import is_strong_password, generate_token, ErrorResponse
+from .tools import is_strong_password, generate_token
+from endpoints.tools import MessageResponse, ErrorResponse
 
 router = APIRouter()
 
@@ -18,10 +19,6 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, max_length=50)
     name: str = Field(..., min_length=2, max_length=50)
     surname: str = Field(..., min_length=2, max_length=50)
-
-
-class MessageResponse(BaseModel):
-    message: str
 
 @router.post("/register", response_model=MessageResponse, responses={
     400: {"model": ErrorResponse, "description": "Bad Request (existing user, weak password)"},
