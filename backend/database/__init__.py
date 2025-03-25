@@ -12,7 +12,7 @@ if os.getenv("UNIT_TESTS") == "1":
     logging.basicConfig()
     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
     MAIN_DATABASE_URL = DATABASE_URL.rsplit('/', 1)[0] + "/postgres"
-    engine = create_engine(MAIN_DATABASE_URL)
+    engine = create_engine(MAIN_DATABASE_URL, isolation_level="AUTOCOMMIT")
     with engine.connect() as connection:
         result = connection.execute(text("SELECT 1 FROM pg_database WHERE datname='unit_tests_database'"))
         if not result.scalar():

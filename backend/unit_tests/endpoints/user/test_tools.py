@@ -1,10 +1,23 @@
 import jwt
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from unittest.mock import patch
+
+from httpx import Headers
+
 from endpoints.user.tools import validate_session
 
 class TestValidateSession:
+
+    def setup_class(self):
+        scope = {
+            "type": "http",
+            "method": "GET",
+            "headers": Headers({"cookie": "session-token=valid_token"}).raw,
+            "scheme": "http",
+        }
+
+        self.request = Request(scope)
 
     @pytest.fixture
     def mock_db(self):
@@ -23,25 +36,22 @@ class TestValidateSession:
             type("User", (), {"is_banned": False, "id": 1, "is_confirmed": True})
         ]
 
-        token = "valid_token"
-        result = validate_session(token, mock_db)
+        result = validate_session(self.request, mock_db)
         assert result.id == 1
 
     def test_validate_session_expired_token(self, mock_db, mock_jwt_decode):
         mock_jwt_decode.side_effect = jwt.ExpiredSignatureError
 
-        token = "expired_token"
         with pytest.raises(HTTPException) as exc_info:
-            validate_session(token, mock_db)
+            validate_session(self.request, mock_db)
         assert exc_info.value.status_code == 401
         assert exc_info.value.detail == "Token expired"
 
     def test_validate_session_invalid_token(self, mock_db, mock_jwt_decode):
         mock_jwt_decode.side_effect = jwt.InvalidTokenError
 
-        token = "invalid_token"
         with pytest.raises(HTTPException) as exc_info:
-            validate_session(token, mock_db)
+            validate_session(self.request, mock_db)
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail == "Invalid token"
 
@@ -52,9 +62,8 @@ class TestValidateSession:
             type("User", (), {"is_banned": False})
         ]
 
-        token = "inactive_token"
         with pytest.raises(HTTPException) as exc_info:
-            validate_session(token, mock_db)
+            validate_session(self.request, mock_db)
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail == "Invalid token"
 
@@ -65,9 +74,8 @@ class TestValidateSession:
             None
         ]
 
-        token = "valid_token"
         with pytest.raises(HTTPException) as exc_info:
-            validate_session(token, mock_db)
+            validate_session(self.request, mock_db)
         assert exc_info.value.status_code == 404
         assert exc_info.value.detail == "User not found"
 
@@ -78,9 +86,8 @@ class TestValidateSession:
             type("User", (), {"is_banned": True})
         ]
 
-        token = "valid_token"
         with pytest.raises(HTTPException) as exc_info:
-            validate_session(token, mock_db)
+            validate_session(self.request, mock_db)
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail == "User is banned"
 
@@ -91,8 +98,7 @@ class TestValidateSession:
             type("User", (), {"is_banned": False, "is_confirmed": False})
         ]
 
-        token = "valid_token"
         with pytest.raises(HTTPException) as exc_info:
-            validate_session(token, mock_db)
+            validate_session(self.request, mock_db)
         assert exc_info.value.status_code == 403
         assert exc_info.value.detail == "Email is not confirmed"

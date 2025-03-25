@@ -33,12 +33,26 @@ class TestLoginUser:
         })
 
         assert response.status_code == 200
-        assert response.json().get("access_token", None) is not None
+        assert response.json().get("message", None) == "Login successful"
+        assert "set-cookie" in response.headers
+        assert "session-token=" in response.headers["set-cookie"]
+        assert "HttpOnly" in response.headers["set-cookie"]
+        assert "Secure" in response.headers["set-cookie"]
+        assert "SameSite=lax" in response.headers["set-cookie"]
+        cookies = response.headers.get("set-cookie")
+        assert cookies is not None
+        token = None
+        for cookie in cookies.split(';'):
+            if cookie.strip().startswith("session-token="):
+                token = cookie.split('=')[1]
+                break
+        assert token is not None
         db = next(get_db())
         user = db.query(User).filter(User.email == "test@example.com").first()
         session = db.query(Session).filter(Session.user_id == user.id).first()
         assert session is not None
         assert session.is_active is True
+        assert session.token == token
 
     def test_login_wrong_email(self):
         response = client.post("/user/login", json={

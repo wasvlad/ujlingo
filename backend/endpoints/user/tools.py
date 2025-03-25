@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Type
 
 import jwt
-from fastapi import HTTPException, Header, Depends
+from fastapi import HTTPException, Depends, Request
 from sqlalchemy.orm import Session as DatabaseSession
 
 from database import get_db
@@ -33,10 +33,13 @@ def generate_token(email: str,
     return token
 
 
-def validate_session(access_token: str = Header(...,
-                                                description="token which was received from login"),
-                     db: DatabaseSession = Depends(get_db)                     ) -> Type[User]:
+def validate_session(request: Request, db: DatabaseSession = Depends(get_db)) -> Type[User]:
     secret_key = os.getenv("SECRET_KEY")
+    access_token = request.cookies.get("session-token")
+
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Login required")
+
     try:
         jwt.decode(access_token, secret_key, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
