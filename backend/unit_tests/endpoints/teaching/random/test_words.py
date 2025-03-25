@@ -21,7 +21,7 @@ class TestWordsTesting:
         app.dependency_overrides[validate_session] = override_validate_user_session
         return TestClient(app)
 
-    def setup_class(self):
+    def setup_method(self):
         logging.basicConfig(level=logging.INFO)
         clear_database()
         self.db = next(get_db())

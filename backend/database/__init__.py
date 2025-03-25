@@ -43,9 +43,16 @@ if ENVIRONMENT is not None:
     engine = create_engine(DATABASE_URL)
     DatabaseSession = sessionmaker(bind=engine)
 
+open = None
+
 def get_db():
+    global open
+    if open is None:
+        open = 0
+    open += 1
     db = DatabaseSession()
     try:
         yield db  # Provide session to route
     finally:
         db.close()
+        open -= 1
