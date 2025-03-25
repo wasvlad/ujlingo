@@ -26,7 +26,8 @@ class TokenResponse(BaseModel):
 })
 async def login_user(user: UserLogin, db: Session = Depends(get_db)):
     '''
-    This function logs in a user, if login is successful, it returns an access token.
+    This function logs in a user, if login is successful, it saves access token in http only cookies.
+    After 200 response frontend can access protected endpoints without any additional actions.
     '''
     existing_user: User | None = db.query(User).filter(User.email == user.email).first()
     if existing_user is None:
