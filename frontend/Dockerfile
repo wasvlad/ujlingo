@@ -1,19 +1,13 @@
-# Use an official Python runtime as the base image.
-FROM python:3.13-alpine
+FROM nginx:alpine
 
-# Set the working directory.
-WORKDIR /frontend
+RUN apk add --no-cache gettext
 
-# Copy the requirements file and install dependencies.
-COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /usr/share/nginx/html
 
-# Copy the rest of the application code.
-COPY main.py main.py
+COPY html/ html/
+COPY static/ static/
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Expose the port that the app runs on.
-EXPOSE 3000
+EXPOSE 3001
 
-# Run the application.
-CMD ["python", "main.py"]
+CMD ["/bin/sh", "-c", "echo '🔸 Starting NGINX on port 3001...\nAccess on http://localhost:3001/html/register.html' && envsubst '${BACKEND_URL}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
