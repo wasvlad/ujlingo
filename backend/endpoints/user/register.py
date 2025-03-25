@@ -51,7 +51,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
     front_end_url = os.getenv("FRONTEND_URL")
 
-    write_email(str(user.email), "Confirm your email", f"To confirm your email, click here: {front_end_url}/user/confirm_email?token={token}")
+    write_email(str(user.email), "Confirm your email", f"To confirm your email, click here: {front_end_url}/html/confirm_email.html?token={token}")
 
     db.commit()
 
