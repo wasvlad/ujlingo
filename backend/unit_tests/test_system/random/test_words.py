@@ -3,8 +3,8 @@ from unittest.mock import patch, AsyncMock, Mock
 
 from database import get_db
 from database.models import User, Base, Word, WordTranslation
-from test_system.main import NoQuestionsException
-from test_system.random.words import WordsTranslationQuestion as Question, WordTranslationsTestBuilder
+from test_system.main import NoQuestionsException, WordsTranslationQuestion as Question
+from test_system.random.words import WordTranslationsTestBuilder
 from unit_tests.tools import clear_database
 
 
