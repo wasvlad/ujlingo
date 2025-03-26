@@ -45,6 +45,9 @@ class TestMigrateWords:
         db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
         db.commit()
 
+    def teardown_class(self):
+        app.dependency_overrides.clear()
+
     @pytest.mark.asyncio
     async def test_migrate_words_success(self, client):
         db = next(get_db())

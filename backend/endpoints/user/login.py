@@ -1,6 +1,6 @@
 from datetime import datetime, timezone, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -9,7 +9,7 @@ import os
 from database import get_db
 from database.models import User, Session as UserSession
 from .hashing import verify_password
-from .tools import generate_token
+from .tools import generate_token, validate_session
 from ..tools import ErrorResponse, MessageResponse
 
 router = APIRouter()
@@ -52,3 +52,16 @@ async def login_user(user: UserLogin, db: Session = Depends(get_db)):
     response.set_cookie(key="session-token", value=token, httponly=True, secure=True, samesite="lax")
 
     return response
+
+
+@router.get("/validate-session", response_model=MessageResponse, responses={
+    401: {"model": ErrorResponse, "description": "Unauthorized"},
+    403: {"model": ErrorResponse, "description": "Forbidden (required email confirmation or user is banned)"},
+    404: {"model": ErrorResponse, "description": "Not Found (user was deleted)"}
+})
+async def login_user(user: User = Depends(validate_session)):
+    '''
+    This endpoint validates is the user is logged in
+    '''
+    return {"message": f"Hello {user.name}!"}
+

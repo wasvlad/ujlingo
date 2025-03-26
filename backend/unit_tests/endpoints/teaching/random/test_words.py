@@ -35,6 +35,9 @@ class TestWordsTesting:
         r = init_redis()
         res = r.delete(f"user:{1}:test")
 
+    def teardown_class(self):
+        app.dependency_overrides.clear()
+
     @pytest.mark.asyncio
     async def test_normal_flow(self, client):
         result = client.post("/teaching/random/words/init_test")

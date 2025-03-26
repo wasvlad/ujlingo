@@ -45,10 +45,10 @@ def validate_session(request: Request, db: DatabaseSession = Depends(get_db)) ->
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=403, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token")
     session = db.query(Session).filter(Session.token == access_token).first()
     if not session.is_active:
-        raise HTTPException(status_code=403, detail="Invalid token")
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     user = db.query(User).filter(User.id == session.user_id).first()
     if not user:

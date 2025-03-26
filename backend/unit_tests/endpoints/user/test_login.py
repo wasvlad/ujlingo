@@ -5,6 +5,7 @@ from database import get_db, engine, DatabaseSession
 from database.models import Base, User, Session
 from main import app
 from endpoints.user.hashing import hash_password
+from unit_tests.tools import clear_database
 
 client = TestClient(app)
 
@@ -74,3 +75,46 @@ class TestLoginUser:
 
         assert response.status_code == 400
         assert response.json() == {"detail": "Invalid email or password"}
+
+
+class TestValidateSession:
+
+    @pytest.fixture
+    def client(self):
+        return TestClient(app)
+
+    def setup_class(self):
+        clear_database()
+        db = next(get_db())
+        db.add(User(email="test@example.com", name="Test", surname="User",
+                    password_hash=hash_password("password"),
+                    is_confirmed=True))
+        db.commit()
+        response = client.post("/user/login", json={
+            "email": "test@example.com",
+            "password": "password",
+        })
+        cookies = response.headers.get("set-cookie")
+        token = None
+        for cookie in cookies.split(';'):
+            if cookie.strip().startswith("session-token="):
+                token = cookie.split('=')[1]
+                break
+        assert token is not None
+        self.valid_token = token
+
+
+    def test_validate_user_success(self):
+        response = client.get("/user/validate-session", cookies={
+            "session-token": self.valid_token
+        })
+
+        assert response.status_code == 200
+        assert response.json().get("message", None) == "Hello Test!"
+
+    def test_validate_user_fail(self):
+        response = client.get("/user/validate-session", cookies={
+            "session-token": "invalid token"
+        })
+
+        assert response.status_code == 401
