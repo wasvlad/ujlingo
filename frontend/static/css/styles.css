@@ -140,6 +140,7 @@ h2 {
   font-size: 16px;
   color: #1a1a1a;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .form-group input:focus ~ label,
@@ -159,7 +160,7 @@ h2 {
 .password-wrapper img {
   position: absolute;
   top: 50%;
-  right: 4px;
+  right: 12px;
   transform: translateY(-50%);
   width: 22px;
   height: 22px;
