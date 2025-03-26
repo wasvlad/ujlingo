@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+  <div class="background" id="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+<form id="login-form" novalidate>
+  <h3>Login</h3>
+
+  <div class="form-group">
+    <input type="email" name="email" id="email" placeholder=" " required>
+    <label for="email">E-mail</label>
+  </div>
+
+  <div class="form-group">
+    <div class="password-wrapper">
+      <input type="password" name="password" id="password" placeholder=" " required>
+      <label for="password">Password</label>
+      <img src="../static/images/eye-closed.png" alt="Show password" onclick="togglePasswordVisibility('password', this)">
+    </div>
+  </div>
+
+  <button type="submit">Log In</button>
+  <p id="message"></p>
+</form>
+
+  <script src="../static/js/toggle-password.js"></script>
+  <script src="../static/js/login-submit.js"></script>
+  <script src="../static/js/login-validation.js"></script></body>
+</html>
