@@ -52,7 +52,7 @@ class TestValidateSession:
 
         with pytest.raises(HTTPException) as exc_info:
             validate_session(self.request, mock_db)
-        assert exc_info.value.status_code == 403
+        assert exc_info.value.status_code == 401
         assert exc_info.value.detail == "Invalid token"
 
     def test_validate_session_inactive_session(self, mock_db, mock_jwt_decode):
@@ -64,7 +64,7 @@ class TestValidateSession:
 
         with pytest.raises(HTTPException) as exc_info:
             validate_session(self.request, mock_db)
-        assert exc_info.value.status_code == 403
+        assert exc_info.value.status_code == 401
         assert exc_info.value.detail == "Invalid token"
 
     def test_validate_session_user_not_found(self, mock_db, mock_jwt_decode):
