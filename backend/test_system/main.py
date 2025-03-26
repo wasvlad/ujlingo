@@ -6,6 +6,9 @@ from database.models import User, WordTranslation, Word
 
 from pydantic import BaseModel
 
+from test_system.caching import init_redis
+
+
 class Result(BaseModel):
     is_correct: bool
     correct_answer: str
@@ -50,26 +53,6 @@ class WordsTranslationQuestion(QuestionInterface):
     def get(self) -> QuestionJsonBase:
         result = QuestionJsonBase(question="Translate the word: " + self._word_translation.word_original.word)
         return result
-
-
-class CachingInterface(ABC):
-    def __init__(self, key: str, data: Any):
-        self.key = key
-        self.data = data
-
-    @abstractmethod
-    def write(self):
-        pass
-
-    @abstractmethod
-    def read(self) -> Any:
-        pass
-
-    @abstractmethod
-    def update(self):
-        pass
-
-
 
 
 class NoQuestionsException(Exception):

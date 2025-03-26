@@ -6,7 +6,8 @@ from typing_extensions import Buffer
 
 from database.models import User
 from endpoints.user.tools import validate_session
-from endpoints.tools import MessageResponse, ErrorResponse, init_redis
+from endpoints.tools import MessageResponse, ErrorResponse
+from test_system.caching import init_redis
 from test_system.random.words import WordTranslationsTestBuilder as TestBuilder
 from test_system.main import QuestionJsonBase, Test, Result, NoQuestionsException
 

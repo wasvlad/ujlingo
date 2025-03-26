@@ -3,7 +3,7 @@ import logging
 import pytest
 from fastapi.testclient import TestClient
 
-from endpoints.tools import init_redis
+from test_system.caching import init_redis
 from endpoints.user.tools import validate_session
 from main import app
 from database.models import User, Word, WordTranslation
