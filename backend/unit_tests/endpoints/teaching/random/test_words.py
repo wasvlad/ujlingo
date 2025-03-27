@@ -3,12 +3,13 @@ import logging
 import pytest
 from fastapi.testclient import TestClient
 
-from test_system.caching import init_redis
+from test_system.caching import RedisCaching
 from endpoints.user.tools import validate_session
 from main import app
 from database.models import User, Word, WordTranslation
 from database import get_db
 from unit_tests.tools import clear_database, add_word_translation
+from test_system.random.words import WordTranslationsTestBuilder
 
 # Mock dependencies
 def override_validate_user_session():
@@ -32,8 +33,9 @@ class TestWordsTesting:
                              word_translation=self.word_translation)
 
     def teardown_method(self):
-        r = init_redis()
-        res = r.delete(f"user:{1}:test")
+        try:
+            user = override_validate_user_session()
+            test.load_from_cache(user, caching_class=RedisCaching)
 
     @pytest.mark.asyncio
     async def test_normal_flow(self, client):
