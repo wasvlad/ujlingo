@@ -12,27 +12,32 @@
     <div class="shape"></div>
   </div>
 
-<form id="login-form" novalidate>
-  <h3>Login</h3>
+  <div class="form-container">
+    <form id="login-form" novalidate>
+      <h3>Login</h3>
 
-  <div class="form-group">
-    <input type="email" name="email" id="email" placeholder=" " required>
-    <label for="email">E-mail</label>
+      <div class="form-group">
+        <input type="email" name="email" id="email" placeholder=" " required>
+        <label for="email">E-mail</label>
+      </div>
+
+      <div class="form-group">
+        <div class="password-wrapper">
+          <input type="password" name="password" id="password" placeholder=" " required>
+          <label for="password">Password</label>
+          <img src="../static/images/eye-closed.png" alt="Show password" onclick="togglePasswordVisibility('password', this)">
+        </div>
+      </div>
+
+      <button type="submit">Log In</button>
+      <p id="message"></p>
+    </form>
+
+    <button class="go-back-btn" onclick="window.location.href='/'">Go Back</button>
   </div>
-
-  <div class="form-group">
-    <div class="password-wrapper">
-      <input type="password" name="password" id="password" placeholder=" " required>
-      <label for="password">Password</label>
-      <img src="../static/images/eye-closed.png" alt="Show password" onclick="togglePasswordVisibility('password', this)">
-    </div>
-  </div>
-
-  <button type="submit">Log In</button>
-  <p id="message"></p>
-</form>
 
   <script src="../static/js/toggle-password.js"></script>
   <script src="../static/js/login-submit.js"></script>
-  <script src="../static/js/login-validation.js"></script></body>
+  <script src="../static/js/login-validation.js"></script>
+</body>
 </html>
