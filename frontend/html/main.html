@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Strona główna</title>
   <link rel="stylesheet" href="../static/css/confirm_email.css">
+  <script src="../static/js/validate-session.js"></script>
 </head>
 <body>
   <div class="background" id="background">
@@ -13,7 +14,10 @@
     <div class="shape"></div>
   </div>
 
-  <h2>HomePage (In progress)</h2>
+  <h2 id="welcome">HomePage (In progress)</h2>
 
+  <script>
+    window.addEventListener('DOMContentLoaded', checkSession);
+  </script>
 </body>
 </html>
