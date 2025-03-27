@@ -65,3 +65,12 @@ async def login_user(user: User = Depends(validate_session)):
     '''
     return {"message": f"Hello {user.name}!"}
 
+@router.get("/logout", response_model=MessageResponse)
+async def logout(request: Request):
+    '''
+    This endpoint validates is the user is logged in
+    '''
+    response = JSONResponse(content={"message": "Logout successful"})
+    for cookie in request.cookies:
+        response.delete_cookie(key=cookie)
+    return response
