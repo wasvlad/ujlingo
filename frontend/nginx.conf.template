@@ -11,10 +11,9 @@ http {
         listen 3001;
         server_name localhost;
 
-        location / {
+        location = / {
             root /usr/share/nginx/html;
-            index index.html;
-            try_files $uri $uri/ =404;
+            index html/index.html;
         }
 
         location /html/ {
