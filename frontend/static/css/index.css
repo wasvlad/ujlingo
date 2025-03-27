@@ -57,14 +57,3 @@
   position: relative;
   top: -40px;
 }
-
-.signin-btn {
-  background-color: white;
-  color: #418041;
-  border: 2px solid #418041;
-}
-
-.signin-btn:hover {
-  background-color: #418041;
-  color: white;
-}
