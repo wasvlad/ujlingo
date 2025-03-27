@@ -55,8 +55,7 @@ def validate_session(request: Request, db: DatabaseSession = Depends(get_db)) ->
         raise HTTPException(status_code=404, detail="User not found")
     if user.is_banned:
         raise HTTPException(status_code=403, detail="User is banned")
-# Uncomment when e-mail confirmation is completed
-#    if not user.is_confirmed:
-#       raise HTTPException(status_code=403, detail="Email is not confirmed")
+    if not user.is_confirmed:
+        raise HTTPException(status_code=403, detail="Email is not confirmed")
 
     return user
