@@ -118,3 +118,24 @@ class TestValidateSession:
         })
 
         assert response.status_code == 401
+
+
+class TestLogout:
+
+    @pytest.fixture
+    def client(self):
+        return TestClient(app)
+
+    def test_logout_success(self, client):
+        response = client.get("/user/logout", cookies={
+            "session-token": "valid_token"
+        })
+        assert response.status_code == 200
+        assert response.json() == {"message": "Logout successful"}
+        assert "session-token" not in response.cookies
+
+    def test_logout_no_cookies(self, client):
+        response = client.get("/user/logout")
+        assert response.status_code == 200
+        assert response.json() == {"message": "Logout successful"}
+        assert "session-token" not in response.cookies
