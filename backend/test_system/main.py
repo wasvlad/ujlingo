@@ -94,6 +94,11 @@ class Test:
             self._caching.update()
         return result
 
+    def delete(self):
+        self._current_question = len(self._questions)
+        if self._caching is not None:
+            self._caching.delete()
+
     @staticmethod
     def load_from_cache(user: User, caching_class: Type[CachingInterface]) -> 'Test':
         instance: Test = caching_class.load(f"test:user:{user.id}")
