@@ -58,3 +58,15 @@ h2 {
   color: #000;
   margin-bottom: 20px;
 }
+
+#clickable-link {
+  color: #004B93;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+#clickable-link:hover {
+  color: #002f66;
+  text-decoration: underline;
+}
