@@ -29,6 +29,8 @@ class TestWordsTesting:
         self.word_translation = WordTranslation()
         self.word_original = Word(word="привіт", language="ua")
         self.word_translated = Word(word="hi", language="en")
+        user = User(email="email@email.com", name="Test", surname="User", password_hash="password")
+        self.db.add(user)
         add_word_translation(db=self.db, word_original=self.word_original, word_translated=self.word_translated,
                              word_translation=self.word_translation)
 

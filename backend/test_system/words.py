@@ -43,13 +43,15 @@ class TranslationKnowledgeSaver(KnowledgeSaverInterface):
         self._difference = 0
 
     def answered(self, result: Result):
-        if not self._asked:
-            raise QuestionNotAskedException("Question was not asked")
         db = next(get_db())
         knowledge = db.query(TranslationKnowledge).filter(
             TranslationKnowledge.user_id == self._user_id,
             TranslationKnowledge.word_translation_id == self._word_translation_id
         ).first()
+        if not knowledge:
+            knowledge = TranslationKnowledge(user_id=self._user_id, word_translation_id=self._word_translation_id)
+            knowledge.knowledge = 0
+            db.add(knowledge)
         knowledge.knowledge += self._difference
         if result.is_correct:
             knowledge.knowledge += 20
@@ -77,4 +79,3 @@ class TranslationKnowledgeSaver(KnowledgeSaverInterface):
             knowledge.knowledge = max(0, knowledge.knowledge)
             self._difference = was - knowledge.knowledge
         db.commit()
-        self._asked = True

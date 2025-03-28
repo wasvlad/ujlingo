@@ -35,6 +35,35 @@ class KnowledgeSaverInterface(ABC):
         pass
 
 
+class QuestionProxyInterface(ABC):
+
+    @abstractmethod
+    def get(self) -> QuestionJsonBase:
+        pass
+
+    @abstractmethod
+    def give_answer(self, answer: str) -> Result:
+        pass
+
+class QuestionProxy(QuestionProxyInterface):
+    def __init__(self, question: QuestionInterface, knowledge_saver: KnowledgeSaverInterface):
+        self._question = question
+        self._knowledge_saver = knowledge_saver
+        self._asked = False
+
+    def get(self) -> QuestionJsonBase:
+        if not self._asked:
+            self._knowledge_saver.asked()
+            self._asked = True
+        return self._question.get()
+
+    def give_answer(self, answer: str) -> Result:
+        result = self._question.give_answer(answer)
+        self._knowledge_saver.answered(result)
+        self._asked = False
+        return result
+
+
 class NoQuestionsException(Exception):
     pass
 
@@ -44,7 +73,7 @@ class Test:
     _current_question = 0
     _user: User
 
-    def __init__(self, user: User, questions: List[QuestionInterface],
+    def __init__(self, user: User, questions: List[QuestionProxyInterface],
                  caching_class: Type[CachingInterface] | None = None):
         self._questions = questions
         self._user = user

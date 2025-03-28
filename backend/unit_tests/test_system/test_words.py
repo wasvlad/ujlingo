@@ -76,7 +76,7 @@ class TestTranslationKnowledgeSaver:
         saver.asked()
         db = next(get_db())
         knowledge = db.query(TranslationKnowledge).filter(TranslationKnowledge.user_id == self.user.id,
-                                              TranslationKnowledge.word_translation_id == self.word_translation.id).first()
+                                                          TranslationKnowledge.word_translation_id == self.word_translation.id).first()
         assert knowledge is not None
         assert knowledge.knowledge == 0
         saver.answered(Result(is_correct=True, correct_answer="correct answer"))
@@ -92,8 +92,9 @@ class TestTranslationKnowledgeSaver:
 
     def test_not_asked(self):
         saver = TranslationKnowledgeSaver(self.user, self.word_translation)
-        try:
-            saver.answered(Result(is_correct=False, correct_answer="wrong answer"))
-        except QuestionNotAskedException:
-            return
-        assert False
+        saver.answered(Result(is_correct=True, correct_answer="wrong answer"))
+        db = next(get_db())
+        knowledge = db.query(TranslationKnowledge).filter(TranslationKnowledge.user_id == self.user.id,
+                                                          TranslationKnowledge.word_translation_id == self.word_translation.id).first()
+        assert knowledge is not None
+        assert knowledge.knowledge == 20

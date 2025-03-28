@@ -22,10 +22,14 @@ class TestWordTranslationsTestBuilder:
         self.word_translation.word_original_id = self.word_original.id
         self.word_translation.word_translated_id = self.word_translated.id
         self.db.add(self.word_translation)
+        self.user = User(email="email@email.com", name="Test", surname="User", password_hash="hashed_password")
+        self.db.add(self.user)
         self.db.commit()
+        self.db.refresh(self.user)
+        self.db.expunge(self.user)
 
     def test_ok(self):
-        test = self.generator.build(User(), number=3)
+        test = self.generator.build(self.user, number=3)
         for i in range(3):
             question = test.get_question()
             assert question.question == f"Translate the word: {self.word_original.word}"
@@ -37,7 +41,7 @@ class TestWordTranslationsTestBuilder:
             test.give_answer("answer")
 
     def test_ok2(self):
-        test = self.generator.build(User())
+        test = self.generator.build(self.user)
         for i in range(10):
             question = test.get_question()
             assert question.question == f"Translate the word: {self.word_original.word}"
@@ -49,7 +53,7 @@ class TestWordTranslationsTestBuilder:
             test.give_answer("answer")
 
     def test_wrong(self):
-        test = self.generator.build(User())
+        test = self.generator.build(self.user)
         for i in range(10):
             question = test.get_question()
             assert question.question == f"Translate the word: {self.word_original.word}"
