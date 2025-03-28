@@ -1,6 +1,6 @@
 from database import get_db
-from database.models import WordTranslation, Word
-from test_system.main import QuestionInterface, Result, QuestionJsonBase
+from database.models import WordTranslation, Word, User, WordTranslationKnowledge as TranslationKnowledge
+from .main import Result, QuestionJsonBase, QuestionInterface, KnowledgeSaverInterface
 
 
 class TranslationQuestion(QuestionInterface):
@@ -32,5 +32,49 @@ class TranslationQuestion(QuestionInterface):
         return result
 
 
-class TranslationQuestionWithKnowledge(TranslationQuestion):
-    
+class QuestionNotAskedException(Exception):
+    pass
+
+class TranslationKnowledgeSaver(KnowledgeSaverInterface):
+    def __init__(self, user: User, word_translation: WordTranslation):
+        self._user_id = user.id
+        self._word_translation_id = word_translation.id
+        self._asked = False
+        self._difference = 0
+
+    def answered(self, result: Result):
+        if not self._asked:
+            raise QuestionNotAskedException("Question was not asked")
+        db = next(get_db())
+        knowledge = db.query(TranslationKnowledge).filter(
+            TranslationKnowledge.user_id == self._user_id,
+            TranslationKnowledge.word_translation_id == self._word_translation_id
+        ).first()
+        knowledge.knowledge += self._difference
+        if result.is_correct:
+            knowledge.knowledge += 20
+        else:
+            knowledge.knowledge -= 50
+        knowledge.knowledge = min(100, knowledge.knowledge)
+        knowledge.knowledge = max(0, knowledge.knowledge)
+        db.commit()
+        self._asked = False
+
+    def asked(self):
+        db = next(get_db())
+        knowledge = db.query(TranslationKnowledge).filter(
+            TranslationKnowledge.user_id == self._user_id,
+            TranslationKnowledge.word_translation_id == self._word_translation_id
+        ).first()
+        if not knowledge:
+            knowledge = TranslationKnowledge(user_id=self._user_id, word_translation_id=self._word_translation_id)
+            self._difference = 0
+            db.add(knowledge)
+        else:
+            was = knowledge.knowledge
+            knowledge.knowledge -= 25
+            knowledge.knowledge = min(100, knowledge.knowledge)
+            knowledge.knowledge = max(0, knowledge.knowledge)
+            self._difference = was - knowledge.knowledge
+        db.commit()
+        self._asked = True

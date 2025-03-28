@@ -3,7 +3,7 @@ from typing import Type
 from sqlalchemy import func
 
 from ..main import Test
-from ..words import WordsTranslationQuestion
+from ..words import TranslationQuestion
 from database.models import WordTranslation, User
 from database import get_db
 from ..caching import CachingInterface
@@ -16,7 +16,7 @@ class WordTranslationsTestBuilder:
         db = next(get_db())
         for i in range(number):
             translation = db.query(WordTranslation).order_by(func.random()).first()
-            question = WordsTranslationQuestion(translation)
+            question = TranslationQuestion(translation)
             questions.append(question)
         test = Test(user, questions, caching_class)
         return test

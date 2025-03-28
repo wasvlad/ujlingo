@@ -3,7 +3,7 @@ from typing import List, Type
 
 from pydantic import BaseModel
 
-from database.models import User
+from database.models import User, WordTranslation
 from .caching import CachingInterface
 
 
@@ -21,6 +21,17 @@ class QuestionInterface(ABC):
 
     @abstractmethod
     def get(self) -> QuestionJsonBase:
+        pass
+
+
+class KnowledgeSaverInterface(ABC):
+
+    @abstractmethod
+    def answered(self, result: Result) -> None:
+        pass
+
+    @abstractmethod
+    def asked(self) -> None:
         pass
 
 
