@@ -47,6 +47,25 @@ class TestRegisterUser:
             assert added_user.is_confirmed is False
             assert added_user.password_hash == "hashed_password"
 
+    def test_register_user_email_uppercase_success(self, client):
+        with patch("endpoints.user.register.is_strong_password", return_value=True), \
+             patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
+             patch("endpoints.user.register.generate_token", return_value="token"), \
+             patch("endpoints.user.register.write_email", return_value=None):
+            response = client.post("/user/register", json={
+                "email": "Test@example.com",
+                "password": "StrongPassword123!",
+                "name": "Test",
+                "surname": "User"
+            })
+            assert response.status_code == 200
+
+            # Verify that the user has been added to the database
+            db = next(get_db())
+            added_user = db.query(User).filter(User.email == "test@example.com").first()
+            assert added_user is not None
+            assert added_user.email == "test@example.com"
+
     def test_register_user_weak_password(self, client):
         with patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
              patch("endpoints.user.register.generate_token", return_value="token"), \

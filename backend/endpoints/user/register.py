@@ -37,7 +37,7 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     hashed_password = hash_password(user.password)
 
     new_user = User(
-        email=str(user.email),
+        email=str(user.email).lower(),
         password_hash=hashed_password,
         name=user.name,
         surname=user.surname
