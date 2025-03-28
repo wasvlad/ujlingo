@@ -3,11 +3,12 @@ import logging
 import pytest
 from fastapi.testclient import TestClient
 
-from endpoints.tools import init_redis
+from test_system.caching import RedisCaching, RedisCachingException
 from endpoints.user.tools import validate_session
 from main import app
 from database.models import User, Word, WordTranslation
 from database import get_db
+from test_system.main import Test
 from unit_tests.tools import clear_database, add_word_translation
 
 # Mock dependencies
@@ -21,19 +22,26 @@ class TestWordsTesting:
         app.dependency_overrides[validate_session] = override_validate_user_session
         return TestClient(app)
 
-    def setup_class(self):
+    def setup_method(self):
         logging.basicConfig(level=logging.INFO)
         clear_database()
         self.db = next(get_db())
         self.word_translation = WordTranslation()
         self.word_original = Word(word="привіт", language="ua")
         self.word_translated = Word(word="hi", language="en")
+        user = User(email="email@email.com", name="Test", surname="User", password_hash="password")
+        self.db.add(user)
         add_word_translation(db=self.db, word_original=self.word_original, word_translated=self.word_translated,
                              word_translation=self.word_translation)
 
     def teardown_method(self):
-        r = init_redis()
-        res = r.delete(f"user:{1}:test")
+        try:
+            user = override_validate_user_session()
+            test = Test.load_from_cache(user, caching_class=RedisCaching)
+            test.delete()
+        except RedisCachingException:
+            # Ok, nothing to delete
+            pass
 
     def teardown_class(self):
         app.dependency_overrides.clear()

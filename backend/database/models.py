@@ -47,3 +47,14 @@ class WordTranslation(Base):
 
     word_original = relationship('Word', foreign_keys=[word_original_id])
     word_translated = relationship('Word', foreign_keys=[word_translated_id])
+
+
+class WordTranslationKnowledge(Base):
+    __tablename__ = "word_translation_knowledge"
+
+    user_id = Column(Integer, ForeignKey('my_user.id', ondelete='CASCADE'), nullable=False)
+    word_translation_id = Column(Integer, ForeignKey('word_translation.id', ondelete='CASCADE'), nullable=False)
+    knowledge = Column(Integer, nullable=False, default=0)
+
+    user = relationship(User)
+    word_translation = relationship(WordTranslation)
