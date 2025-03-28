@@ -29,14 +29,15 @@ async def login_user(user: UserLogin, db: Session = Depends(get_db)):
     This function logs in a user, if login is successful, it saves access token in http only cookies.
     After 200 response frontend can access protected endpoints without any additional actions.
     '''
-    existing_user: User | None = db.query(User).filter(User.email == user.email).first()
+    email = str(user.email).lower()
+    existing_user: User | None = db.query(User).filter(User.email == email).first()
     if existing_user is None:
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
     if not verify_password(user.password, existing_user.password_hash):
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
-    token = generate_token(str(user.email), os.getenv("SECRET_KEY"),
+    token = generate_token(email, os.getenv("SECRET_KEY"),
                            expiration_date=datetime.now(timezone.utc) + timedelta(days=30))
 
     new_session = UserSession(

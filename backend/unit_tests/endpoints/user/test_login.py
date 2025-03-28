@@ -55,6 +55,28 @@ class TestLoginUser:
         assert session.is_active is True
         assert session.token == token
 
+
+    def test_login_user_success_email_uppercase(self, client):
+
+        response = client.post("/user/login", json={
+            "email": "Test@example.com",
+            "password": "password",
+        })
+
+        assert response.status_code == 200
+        cookies = response.headers.get("set-cookie")
+        token = None
+        for cookie in cookies.split(';'):
+            if cookie.strip().startswith("session-token="):
+                token = cookie.split('=')[1]
+                break
+        assert token is not None
+        db = next(get_db())
+        user = db.query(User).filter(User.email == "test@example.com").first()
+        session = db.query(Session).filter(Session.user_id == user.id).first()
+        assert session.is_active is True
+        assert session.token == token
+
     def test_login_wrong_email(self):
         response = client.post("/user/login", json={
             "email": "wrong@email.com",
