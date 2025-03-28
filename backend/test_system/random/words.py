@@ -2,7 +2,8 @@ from typing import Type
 
 from sqlalchemy import func
 
-from ..main import Test, WordsTranslationQuestion
+from ..main import Test
+from ..words import WordsTranslationQuestion
 from database.models import WordTranslation, User
 from database import get_db
 from ..caching import CachingInterface

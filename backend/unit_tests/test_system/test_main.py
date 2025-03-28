@@ -1,6 +1,6 @@
 from database import get_db
 from database.models import WordTranslation, Word
-from test_system.main import WordsTranslationQuestion as Question
+from test_system.words import WordsTranslationQuestion as Question
 from unit_tests.tools import clear_database
 
 
