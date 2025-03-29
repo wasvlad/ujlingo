@@ -36,9 +36,6 @@ async def login_user(user: UserLogin, db: Session = Depends(get_db)):
     if not verify_password(user.password, existing_user.password_hash):
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
-    if not existing_user.is_confirmed:
-        raise HTTPException(status_code=403, detail="Please confirm your email before signing in")
-
     token = generate_token(str(user.email), os.getenv("SECRET_KEY"),
                            expiration_date=datetime.now(timezone.utc) + timedelta(days=30))
 
