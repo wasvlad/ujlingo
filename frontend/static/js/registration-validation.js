@@ -1,5 +1,32 @@
 const form = document.getElementById('register-form');
 const message = document.getElementById('message');
+const passwordInput = document.getElementById('password');
+
+const reqUppercase = document.getElementById('req-uppercase');
+const reqLowercase = document.getElementById('req-lowercase');
+const reqNumber = document.getElementById('req-number');
+const reqSpecial = document.getElementById('req-special');
+const reqLength = document.getElementById('req-length');
+
+passwordInput.addEventListener('input', () => {
+  const password = passwordInput.value;
+  toggleRequirement(reqUppercase, /[A-Z]/.test(password));
+  toggleRequirement(reqLowercase, /[a-z]/.test(password));
+  toggleRequirement(reqNumber, /\d/.test(password));
+  toggleRequirement(reqSpecial, /[!@#$%^&*(),.?":{}|<>]/.test(password));
+  toggleRequirement(reqLength, password.length >= 8);
+});
+
+function toggleRequirement(element, condition) {
+  element.style.color = condition ? 'green' : 'red';
+
+  const icon = element.querySelector('img');
+  if (icon) {
+    icon.src = condition
+      ? '../static/images/valid.png'
+      : '../static/images/invalid.png';
+  }
+}
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -49,25 +76,19 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  const password = document.getElementById('password').value;
+  const password = passwordInput.value;
   const confirmPassword = document.getElementById('confirm-password').value;
-
-  if (password.length < 8) {
-    document.getElementById('password').classList.add('error-border');
-    message.textContent = 'Password must be at least 8 characters';
-    message.style.color = 'red';
-    return;
-  }
 
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumber = /\d/.test(password);
   const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const hasValidLength = password.length >= 8;
 
-  if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar) {
-    document.getElementById('password').classList.add('error-border');
-    message.textContent = 'Password must include uppercase, lowercase, number and special character';
+  if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar || !hasValidLength) {
+    message.textContent = 'Password does not meet all the requirements.';
     message.style.color = 'red';
+    passwordInput.classList.add('error-border');
     return;
   }
 
@@ -78,7 +99,6 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  // Przekazanie danych do funkcji z innego pliku:
   submitRegistration({
     email,
     password,
