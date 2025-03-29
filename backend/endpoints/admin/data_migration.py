@@ -25,7 +25,7 @@ def words_translations_to_pairs(data: dict) -> list:
 @router.post("/migrate-words", response_model=MessageResponse)
 async def migrate_words(user: User = Depends(validate_admin_session),
                               db: Session = Depends(get_db)):
-    url = os.getenv("TRANSLATOR_URL") + "/en-to-ua-words"
+    url = os.getenv("TRANSLATOR_URL") + "/sync-en-ua-words"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
         response.raise_for_status()
