@@ -9,7 +9,12 @@ async function checkSession() {
       const data = await response.json();
       document.getElementById('welcome').innerText = data.message;
     } else {
-    window.location.href = '/html/login.html';
+      const result = await response.json();
+      if (result.detail === "Email is not confirmed") {
+        window.location.href = '/html/login.html?notice=unconfirmed';
+      } else {
+        window.location.href = '/html/login.html';
+      }
     }
   } catch (error) {
     console.error('Error during session validation:', error);

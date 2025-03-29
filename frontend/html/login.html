@@ -5,6 +5,8 @@
   <title>Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../static/css/styles.css">
+  <link rel="stylesheet" href="../static/css/buttons.css">
+  <link rel="stylesheet" href="../static/css/forms.css">
 </head>
 <body>
   <div class="background" id="background">
@@ -31,6 +33,10 @@
 
       <button type="submit">Log In</button>
       <p id="message"></p>
+      <p style="margin-top: 15px;">
+        Don't have an account?
+        <a id="clickable-link" href="/html/register.html">Create an account</a>
+      </p>
     </form>
 
     <button class="go-back-btn" onclick="window.location.href='/'">Go Back</button>
@@ -39,5 +45,6 @@
   <script src="../static/js/toggle-password.js"></script>
   <script src="../static/js/login-submit.js"></script>
   <script src="../static/js/login-validation.js"></script>
+  <script src="../static/js/notice-handler.js"></script>
 </body>
 </html>

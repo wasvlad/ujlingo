@@ -5,6 +5,8 @@
   <title>Registration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="../static/css/styles.css">
+  <link rel="stylesheet" href="../static/css/buttons.css">
+  <link rel="stylesheet" href="../static/css/forms.css">
 </head>
 <body>
   <div class="background" id="background">
@@ -50,6 +52,10 @@
       <button type="submit">Create Account</button>
 
       <p id="message"></p>
+      <p style="margin-top: 15px;">
+        Already have an account?
+        <a id="clickable-link" href="/html/login.html">Sign in</a>
+      </p>
     </form>
 
     <button class="go-back-btn" onclick="window.location.href='/'">Go Back</button>
