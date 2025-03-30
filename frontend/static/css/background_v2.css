@@ -1,0 +1,37 @@
+.background .shape {
+  margin-top: 70px;
+  margin-bottom: 70px;
+  height: 200px;
+  width: 200px;
+  position: absolute;
+  opacity: 75%;
+  border-radius: 24%;
+}
+
+.shape:first-child {
+  background: linear-gradient(to right, #418041, #66ff00);
+  top: 75px;
+  left: 350px;
+  transform: rotate(45deg);
+}
+
+.shape:nth-child(2) {
+  background: linear-gradient(to left, #004B93, #00aeff);
+  top: 75px;
+  right: 350px;
+  transform: rotate(-45deg);
+}
+
+.shape:nth-child(3) {
+  background: linear-gradient(to right, #418041, #66ff00);
+  bottom: 75px;
+  left: 350px;
+  transform: rotate(-45deg);
+}
+
+.shape:nth-child(4) {
+  background: linear-gradient(to left, #004B93, #00aeff);
+  bottom: 75px;
+  right: 350px;
+  transform: rotate(45deg);
+}

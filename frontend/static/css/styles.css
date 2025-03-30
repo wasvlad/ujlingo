@@ -1,41 +1,13 @@
+@import url("navbar.css");
+
 body {
-  background-color: #f4f4f4;
+  background-color: #f5f7f7;
   font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
-}
-
-.background {
-  width: 430px;
-  height: 520px;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  left: 50%;
-  top: 50%;
-  pointer-events: none;
-}
-
-.background .shape {
-  height: 300px;
-  width: 300px;
-  position: absolute;
-  border-radius: 50%;
-  opacity: 75%;
-}
-
-.shape:first-child {
-  background: linear-gradient(to bottom right, #004B93, #00aeff);
-  left: -240px;
-  top: -240px;
-}
-
-.shape:last-child {
-  background: linear-gradient(to top left, #418041, #66ff00);
-  right: -240px;
-  bottom: -240px;
 }
 
 input:focus {
