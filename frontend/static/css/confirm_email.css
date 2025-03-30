@@ -1,59 +1,13 @@
 body {
-  background-color: #f4f4f4;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
   flex-direction: column;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
 }
 
 #message {
   font-size: 22px;
   margin-top: 16px;
-  font-weight: bold;
-  color: #C9002B;
 }
 
 h2 {
   font-size: 36px;
-  color: #000;
   margin-bottom: 0px;
-}
-
-.background .shape {
-  height: 200px;
-  width: 200px;
-  position: absolute;
-  opacity: 75%;
-  border-radius: 24%;
-}
-
-.shape:first-child {
-  background: linear-gradient(to right, #418041, #66ff00);
-  top: 75px;
-  left: 350px;
-  transform: rotate(45deg);
-}
-
-.shape:nth-child(2) {
-  background: linear-gradient(to left, #004B93, #00aeff);
-  top: 75px;
-  right: 350px;
-  transform: rotate(-45deg);
-}
-
-.shape:nth-child(3) {
-  background: linear-gradient(to right, #418041, #66ff00);
-  bottom: 75px;
-  left: 350px;
-  transform: rotate(-45deg);
-}
-
-.shape:nth-child(4) {
-  background: linear-gradient(to left, #004B93, #00aeff);
-  bottom: 75px;
-  right: 350px;
-  transform: rotate(45deg);
 }

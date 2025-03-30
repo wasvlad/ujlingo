@@ -1,6 +1,5 @@
 button {
   width: 100%;
-  min-width: 400px;
   max-width: 450px;
   background-color: #004B93;
   color: #fff;
@@ -19,6 +18,7 @@ button:hover {
 }
 
 .signin-btn {
+  min-width: 400px;
   background-color: rgba(255, 255, 255, 0.13);
   color: #418041;
   border: 2px solid #418041;
@@ -30,6 +30,7 @@ button:hover {
 }
 
 .go-back-btn {
+  min-width: 400px;
   margin-top: 20px;
   padding: 20px 20px;
   background-color: rgba(255, 255, 255, 0.13);

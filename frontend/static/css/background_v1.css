@@ -1,0 +1,31 @@
+.background {
+  width: 430px;
+  height: 520px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+
+.background .shape {
+  margin-top: 70px;
+  margin-bottom: 70px;
+  height: 300px;
+  width: 300px;
+  position: absolute;
+  border-radius: 50%;
+  opacity: 75%;
+}
+
+.shape:first-child {
+  background: linear-gradient(to bottom right, #004B93, #00aeff);
+  left: -240px;
+  top: -240px;
+}
+
+.shape:last-child {
+  background: linear-gradient(to top left, #418041, #66ff00);
+  right: -240px;
+  bottom: -240px;
+}

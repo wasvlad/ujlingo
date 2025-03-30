@@ -4,7 +4,7 @@ form {
   border-radius: 10px;
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
+  box-shadow: 0 0 10px rgba(8, 7, 16, 0.6);
   padding: 50px 35px;
   position: relative;
   z-index: 1;
@@ -77,7 +77,7 @@ form h3 {
   top: -20px;
   left: 0px;
   font-size: 15px;
-  color: #62cc62;
+  color: #418041;
 }
 
 .password-wrapper {
@@ -93,4 +93,35 @@ form h3 {
   height: 22px;
   cursor: pointer;
   pointer-events: auto;
+}
+
+#password-requirements {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  list-style: none;
+  padding-left: 0;
+  font-size: 14px;
+  margin-bottom: -14px;
+  transition: max-height 1s ease, opacity 0.7s ease;
+}
+
+.password-wrapper:focus-within + #password-requirements {
+  max-height: 200px;
+  opacity: 1;
+}
+
+#password-requirements li {
+  color: red;
+  transition: color 0.3s;
+  margin-left: 2px;
+}
+
+#password-requirements li.valid {
+  color: green;
+}
+
+.requirement-icon {
+  width: 10px;
+  height: 10px;
 }
