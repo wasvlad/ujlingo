@@ -12,7 +12,7 @@ async function checkSession() {
     } else {
       const result = await response.json();
       if (result.detail === "Email is not confirmed") {
-        window.location.href = "/html/login.html?notice=unconfirmed";
+        window.location.href = '/html/login.html?notice=unconfirmed';
       } else {
         window.location.href = '/html/login.html';
       }
