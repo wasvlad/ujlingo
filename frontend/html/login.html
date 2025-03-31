@@ -35,10 +35,7 @@
 
       <button type="submit">Log In</button>
       <p id="message"></p>
-      <p style="margin-top: 15px;">
-        Don't have an account?
-        <a id="clickable-link" href="/html/register.html">Create an account</a>
-      </p>
+      <p id="login-session-link" style="margin-top: 15px;"></p>
     </form>
 
     <button class="go-back-btn" onclick="window.location.href='/'">Go Back</button>
@@ -48,5 +45,9 @@
   <script src="../static/js/login-submit.js"></script>
   <script src="../static/js/login-validation.js"></script>
   <script src="../static/js/notice-handler.js"></script>
+  <script src="../static/js/validate-session.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', checkSession);
+  </script>
 </body>
 </html>
