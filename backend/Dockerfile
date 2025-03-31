@@ -12,12 +12,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code.
 COPY alembic alembic
 COPY database database
-COPY email_service email_service
 COPY unit_tests unit_tests
 COPY alembic.ini alembic.ini
 COPY main.py main.py
 COPY endpoints endpoints
 COPY test_system test_system
+COPY notifications notifications
 
 ENV SECRET_KEY="strong_secret_key"
 ENV PYTHONUNBUFFERED=1

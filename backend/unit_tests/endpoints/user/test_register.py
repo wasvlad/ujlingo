@@ -26,8 +26,7 @@ class TestRegisterUser:
     def test_register_user_success(self, client):
         with patch("endpoints.user.register.is_strong_password", return_value=True), \
              patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
-             patch("endpoints.user.register.generate_token", return_value="token"), \
-             patch("endpoints.user.register.write_email", return_value=None):
+             patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "test@example.com",
                 "password": "StrongPassword123!",
@@ -50,8 +49,7 @@ class TestRegisterUser:
     def test_register_user_email_uppercase_success(self, client):
         with patch("endpoints.user.register.is_strong_password", return_value=True), \
              patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
-             patch("endpoints.user.register.generate_token", return_value="token"), \
-             patch("endpoints.user.register.write_email", return_value=None):
+             patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "Test@example.com",
                 "password": "StrongPassword123!",
@@ -68,8 +66,7 @@ class TestRegisterUser:
 
     def test_register_user_weak_password(self, client):
         with patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
-             patch("endpoints.user.register.generate_token", return_value="token"), \
-             patch("endpoints.user.register.write_email", return_value=None):
+             patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "test@example.com",
                 "password": "weak_password",
@@ -88,8 +85,7 @@ class TestRegisterUser:
         db = next(get_db())
         db.add(User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password"))
         db.commit()
-        with patch("endpoints.user.register.generate_token", return_value="token"), \
-                patch("endpoints.user.register.write_email", return_value=None):
+        with patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "test@example.com",
                 "password": "StrongPassword123!",

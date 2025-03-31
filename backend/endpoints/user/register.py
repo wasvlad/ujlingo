@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 from database import get_db
 from database.models import User
 from .hashing import hash_password
-from email_service import write_email
 from .tools import is_strong_password, generate_token
 from endpoints.tools import MessageResponse, ErrorResponse
+from notifications.email import EmailNotificationService
 
 router = APIRouter()
 
@@ -48,7 +48,9 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
     front_end_url = os.getenv("FRONTEND_URL")
 
-    write_email(str(user.email), "Confirm your email", f"To confirm your email, click here: {front_end_url}/html/confirm_email.html?token={token}")
+    email_service = EmailNotificationService(new_user)
+    email_service.send_notification("Confirm your email",
+                                    f"To confirm your email, click here: {front_end_url}/html/confirm_email.html?token={token}")
 
     db.commit()
 
