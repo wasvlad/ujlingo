@@ -1,24 +1,33 @@
-document.addEventListener("DOMContentLoaded", () => {
-    fetch("/static/components/navbar.html")
-    .then(response => {
-      if (!response.ok) throw new Error("Failed to load navbar");
-      return response.text();
-    })
-    .then(html => {
-      const container = document.createElement("div");
-      container.innerHTML = html;
-      document.body.insertBefore(container, document.body.firstChild);
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const response = await fetch('/api/user/validate-session', {
+      method: 'GET',
+      credentials: 'include'
+    });
 
+    const navbarPath = response.ok
+      ? "/static/components/navbar.html"
+      : "/static/components/navbar-public.html";
+
+    const navbarRes = await fetch(navbarPath);
+    if (!navbarRes.ok) throw new Error("Failed to load navbar");
+    const html = await navbarRes.text();
+
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    document.body.insertBefore(container, document.body.firstChild);
+
+    if (response.ok) {
       const logoutBtn = container.querySelector(".logout-btn");
       if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
           try {
-            const res = await fetch("/api/user/logout", {
+            const logoutRes = await fetch("/api/user/logout", {
               method: "GET",
               credentials: "include"
             });
 
-            if (res.ok) {
+            if (logoutRes.ok) {
               window.location.href = "/";
             } else {
               console.error("Logout failed");
@@ -28,6 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       }
-    })
-    .catch(error => console.error("Navbar loading error:", error));
+    }
+  } catch (err) {
+    console.error("Navbar dynamic loading error:", err);
+  }
 });
