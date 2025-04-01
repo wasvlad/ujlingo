@@ -1,37 +1,13 @@
+import { setupLivePasswordValidation, isPasswordStrong } from './password-validation.js';
+
 const form = document.getElementById('register-form');
 const message = document.getElementById('message');
 const passwordInput = document.getElementById('password');
 
-const reqUppercase = document.getElementById('req-uppercase');
-const reqLowercase = document.getElementById('req-lowercase');
-const reqNumber = document.getElementById('req-number');
-const reqSpecial = document.getElementById('req-special');
-const reqLength = document.getElementById('req-length');
-
-passwordInput.addEventListener('input', () => {
-  const password = passwordInput.value;
-  toggleRequirement(reqUppercase, /[A-Z]/.test(password));
-  toggleRequirement(reqLowercase, /[a-z]/.test(password));
-  toggleRequirement(reqNumber, /\d/.test(password));
-  toggleRequirement(reqSpecial, /[!@#$%^&*(),.?":{}|<>]/.test(password));
-  toggleRequirement(reqLength, password.length >= 8);
-});
-
-function toggleRequirement(element, condition) {
-  element.style.color = condition ? 'green' : 'red';
-
-  const icon = element.querySelector('img');
-  if (icon) {
-    icon.src = condition
-      ? '../static/images/valid.png'
-      : '../static/images/invalid.png';
-  }
-}
+setupLivePasswordValidation('password');
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-
-  let valid = true;
   message.textContent = '';
 
   const inputs = form.querySelectorAll('input');
@@ -52,15 +28,18 @@ form.addEventListener('submit', async (e) => {
   }
 
   const email = form.email.value.trim();
-  const emailPattern = /^[^@]+@[^@]+\.[^@]+$/;
-  if (!emailPattern.test(email)) {
+  const name = form.name.value.trim();
+  const surname = form.surname.value.trim();
+  const password = passwordInput.value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
     form.email.classList.add('error-border');
     message.textContent = 'Email address is not valid';
     message.style.color = 'red';
     return;
   }
 
-  const name = form.name.value.trim();
   if (name.length < 2) {
     form.name.classList.add('error-border');
     message.textContent = 'Name must be at least 2 characters long';
@@ -68,7 +47,6 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  const surname = form.surname.value.trim();
   if (surname.length < 2) {
     form.surname.classList.add('error-border');
     message.textContent = 'Last Name must be at least 2 characters long';
@@ -76,16 +54,7 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  const password = passwordInput.value;
-  const confirmPassword = document.getElementById('confirm-password').value;
-
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  const hasValidLength = password.length >= 8;
-
-  if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar || !hasValidLength) {
+  if (!isPasswordStrong(password)) {
     message.textContent = 'Password does not meet all the requirements.';
     message.style.color = 'red';
     passwordInput.classList.add('error-border');
@@ -99,10 +68,5 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  submitRegistration({
-    email,
-    password,
-    name,
-    surname
-  });
+  submitRegistration({ email, password, name, surname });
 });
