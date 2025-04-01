@@ -20,6 +20,7 @@ COPY test_system test_system
 COPY notifications notifications
 
 ENV SECRET_KEY="strong_secret_key"
+ENV PASSWORD_RESET_KEY="strong_password_reset_key"
 ENV PYTHONUNBUFFERED=1
 
 # Expose the port that the app runs on.
