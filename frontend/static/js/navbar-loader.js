@@ -37,7 +37,23 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         });
       }
+
+      const userIcon = container.querySelector("#user-icon");
+      const dropdown = container.querySelector("#user-dropdown");
+
+      if (userIcon && dropdown) {
+        userIcon.addEventListener("click", () => {
+          dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!userIcon.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = "none";
+          }
+        });
+      }
     }
+
   } catch (err) {
     console.error("Navbar dynamic loading error:", err);
   }

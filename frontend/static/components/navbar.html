@@ -6,6 +6,14 @@
   </div>
   <div class="navbar-right">
     <button class="logout-btn">Logout</button>
-    <img src="../static/images/user.png" alt="Account" class="user-icon">
+
+    <div class="user-menu">
+      <img src="../static/images/user.png" alt="Account" class="user-icon" id="user-icon">
+      <div class="dropdown" id="user-dropdown">
+        <button>Stats</button>
+        <button>Change E-mail</button>
+        <button onclick="window.location.href='/html/change-password.html'">Change Password</button>
+      </div>
+    </div>
   </div>
 </nav>
