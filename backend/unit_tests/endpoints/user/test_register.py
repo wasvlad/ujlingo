@@ -123,7 +123,6 @@ class TestConfirmEmail:
 
         response = client.get(f"/user/confirm_email?token={token}")
 
-        print(response.json())
         assert response.status_code == 200
         assert response.json() == {"message": "Email confirmed successfully"}
         db = next(get_db())
