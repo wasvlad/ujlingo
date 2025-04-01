@@ -23,7 +23,7 @@ class TestChangePassword:
         clear_database()
         db = next(get_db())
         self.user = User(email="test@example.com", name="Test", surname="User",
-                    password_hash=hash_password("password"),
+                    password_hash=hash_password("Strongpassword1!"),
                     is_confirmed=True)
         db.add(self.user)
         db.commit()
@@ -41,14 +41,14 @@ class TestChangePassword:
     def test_ok(self, client):
 
         response = client.post("/user/change-password", json={
-            "old_password": "password",
+            "old_password": "Strongpassword1!",
             "new_password": "new-passwordA1!",
         },
                                cookies={"session-token": self.session.token})
         assert response.status_code == 200
         db = next(get_db())
         user = db.query(User).filter(User.id == self.user.id).first()
-        assert not verify_password("password", user.password_hash)
+        assert not verify_password("Strongpassword1!", user.password_hash)
         assert verify_password("new-passwordA1!", user.password_hash)
 
     def test_wrong_old_password(self, client):
@@ -61,8 +61,16 @@ class TestChangePassword:
 
     def test_wrong_new_password(self, client):
         response = client.post("/user/change-password", json={
-            "old_password": "password",
+            "old_password": "Strongpassword1!",
             "new_password": "weak",
         }, cookies={"session-token": self.session.token})
         assert response.status_code == 400
         assert response.json() == {"detail": "New password is not strong enough"}
+    
+    def test_same_password(self, client):
+        response = client.post("/user/change-password", json={
+            "old_password": "Strongpassword1!",
+            "new_password": "Strongpassword1!",
+        }, cookies={"session-token": self.session.token})
+        assert response.status_code == 400
+        assert response.json() == {"detail": "New password cannot be the same as the old password"}
