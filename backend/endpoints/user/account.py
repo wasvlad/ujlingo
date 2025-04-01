@@ -26,6 +26,9 @@ async def password_change(data: PasswordChangeRequest, user: User = Depends(vali
 
     if not is_strong_password(data.new_password):
         raise HTTPException(status_code=400, detail="New password is not strong enough")
+
+    if verify_password(data.new_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="New password cannot be the same as the old password")
     hashed_password = hash_password(data.new_password)
     user.password_hash = hashed_password
     db.commit()
