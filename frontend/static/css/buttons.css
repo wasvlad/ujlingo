@@ -29,6 +29,15 @@ button:hover {
   color: white;
 }
 
+.continue-btn {
+  min-width: 400px;
+  background-color: #418041;
+}
+
+.continue-btn:hover {
+  background-color: #284d28;
+}
+
 .go-back-btn {
   min-width: 400px;
   margin-top: 20px;
