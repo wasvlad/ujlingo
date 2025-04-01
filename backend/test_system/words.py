@@ -1,7 +1,13 @@
+from random import shuffle
+from typing import List
+
 from database import get_db
 from database.models import WordTranslation, Word, User, WordTranslationKnowledge as TranslationKnowledge
 from .main import Result, QuestionJsonBase, QuestionInterface, KnowledgeSaverInterface
 
+
+class MSQQuestionJson(QuestionJsonBase):
+    options: List[str]
 
 class TranslationQuestion(QuestionInterface):
     _word_translation: WordTranslation
@@ -29,6 +35,29 @@ class TranslationQuestion(QuestionInterface):
 
     def get(self) -> QuestionJsonBase:
         result = QuestionJsonBase(question="Translate the word: " + self._word_translation.word_original.word)
+        return result
+
+
+class LanguageException(Exception):
+    pass
+
+
+class MSQQuestion(TranslationQuestion):
+    def __init__(self, translation: WordTranslation, options: List[Word] = None):
+        super().__init__(translation)
+        if options is None:
+            options = []
+        self._possible_answers = options
+        self._possible_answers.append(translation.word_translated)
+        for word in self._possible_answers:
+            if word.language != translation.word_translated.language:
+                raise LanguageException("Options language should be as language of translated word")
+        shuffle(self._possible_answers)
+
+    def get(self) -> MSQQuestionJson:
+        result_p = super().get()
+        options = [word.word for word in self._possible_answers]
+        result = MSQQuestionJson(question=result_p.question, options=options)
         return result
 
 
