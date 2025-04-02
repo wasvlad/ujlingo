@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Reset Password</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/css/styles.css">
+  <link rel="stylesheet" href="../static/css/buttons.css">
+  <link rel="stylesheet" href="../static/css/forms.css">
+  <link rel="stylesheet" href="../static/css/background_v1.css">
+</head>
+<body>
+  <div class="background" id="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <div class="form-container">
+    <form id="request-reset-form" novalidate>
+      <h3>Reset Password</h3>
+
+      <div class="form-group">
+        <input type="email" name="email" id="email" placeholder=" " required>
+        <label for="email">Enter your account e-mail</label>
+      </div>
+
+      <button type="submit">Send reset link</button>
+      <p id="message"></p>
+    </form>
+
+    <button class="go-back-btn" onclick="window.location.href='/html/login.html'">Go Back</button>
+  </div>
+
+  <script src="../static/js/request-password-reset.js"></script>
+</body>
+</html>

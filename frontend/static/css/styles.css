@@ -20,6 +20,7 @@ input:focus {
 }
 
 #message {
+  white-space: pre-line;
   margin-top: 20px;
   font-weight: bold;
   color: #C9002B;

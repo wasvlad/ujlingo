@@ -55,7 +55,7 @@ form.addEventListener('submit', async (e) => {
   }
 
   if (!isPasswordStrong(password)) {
-    message.textContent = 'Password does not meet all the requirements.';
+    message.textContent = 'Password does not meet all the requirements';
     message.style.color = 'red';
     passwordInput.classList.add('error-border');
     return;
