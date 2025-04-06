@@ -6,7 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!message) return;
 
   if (notice === 'unconfirmed') {
-    message.textContent = 'Please confirm your e-mail before logging in.';
+    message.textContent = 'Please confirm your e-mail before logging in';
     message.style.color = 'red';
+  }
+
+  if (notice === 'password-reset-success') {
+    message.textContent = 'Password reset successful\n Sign in using your new password';
+    message.style.color = 'green';
   }
 });
