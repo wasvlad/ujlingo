@@ -138,8 +138,6 @@ async def migrate_words(user: User = Depends(validate_admin_session),
         else:
             continue
 
-    qq = db.query(Sentence).all()
-
     for sentence_ua, sentence_en in data_converted:
         sentence_en_db = db.query(Sentence).filter(Sentence.sentence == sentence_en, Sentence.language == "en").first()
         sentence_ua_db = db.query(Sentence).filter(Sentence.sentence == sentence_ua, Sentence.language == "ua").first()
