@@ -58,3 +58,20 @@ class WordTranslationKnowledge(Base):
 
     user = relationship(User)
     word_translation = relationship(WordTranslation)
+
+
+class Sentence(Base):
+    __tablename__ = "sentence"
+
+    sentence = Column(String, unique=True, nullable=False)
+    language = Column(String, nullable=False)
+
+
+class SentenceTranslation(Base):
+    __tablename__ = "sentence_translation"
+
+    sentence_original_id = Column(Integer, ForeignKey('sentence.id', ondelete='CASCADE'), nullable=False)
+    sentence_translated_id = Column(Integer, ForeignKey('sentence.id', ondelete='CASCADE'), nullable=False)
+
+    sentence_original = relationship('Sentence', foreign_keys=[sentence_original_id])
+    sentence_translated = relationship('Sentence', foreign_keys=[sentence_translated_id])
