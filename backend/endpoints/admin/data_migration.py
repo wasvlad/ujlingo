@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from database import get_db
 from .tools import validate_admin_session
-from database.models import User, Word, WordTranslation
+from database.models import User, Word, WordTranslation, Sentence, SentenceTranslation
 
 router = APIRouter()
 
@@ -22,7 +22,7 @@ def words_translations_to_pairs(data: dict) -> list:
             data_converted.append((orig, translated))
     return data_converted
 
-@router.post("/migrate-words", response_model=MessageResponse)
+@router.post("/sync-words", response_model=MessageResponse)
 async def migrate_words(user: User = Depends(validate_admin_session),
                               db: Session = Depends(get_db)):
     url = os.getenv("TRANSLATOR_URL") + "/sync-en-ua-words"
@@ -86,3 +86,71 @@ async def migrate_words(user: User = Depends(validate_admin_session),
     db.commit()
 
     return {"message": "Words migrated successfully"}
+
+
+@router.post("/sync-sentences", response_model=MessageResponse)
+async def migrate_words(user: User = Depends(validate_admin_session),
+                              db: Session = Depends(get_db)):
+    url = os.getenv("TRANSLATOR_URL") + "/sync-sentences"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        data = response.json()
+    data_converted = words_translations_to_pairs(data)
+    ua_sentences = set(data.keys())
+    ua_sentences_db = db.query(Sentence).filter(Sentence.language == "ua").all()
+    for ua_sentence_db in ua_sentences_db:
+        if ua_sentence_db.sentence not in ua_sentences:
+            db.delete(ua_sentence_db)
+        else:
+            ua_sentences.remove(ua_sentence_db.sentence)
+    for ua_sentence in ua_sentences:
+        sentence = Sentence(sentence=ua_sentence, language="ua")
+        db.add(sentence)
+
+    en_sentences_db = db.query(Sentence).filter(Sentence.language == "en").all()
+    en_sentences = set()
+    for ua_sentence, en_sentence in data_converted:
+        en_sentences.add(en_sentence)
+    for en_sentence_db in en_sentences_db:
+        if en_sentence_db.sentence not in en_sentences:
+            db.delete(en_sentence_db)
+        else:
+            en_sentences.remove(en_sentence_db.sentence)
+    for en_sentence in en_sentences:
+        sentence = Sentence(sentence=en_sentence, language="en")
+        db.add(sentence)
+
+    db.commit()
+
+    sentence_translations = db.query(SentenceTranslation).options(
+        joinedload(SentenceTranslation.sentence_original),
+        joinedload(SentenceTranslation.sentence_translated)
+    ).all()
+    for sentence_translation in sentence_translations:
+        original = sentence_translation.sentence_original
+        translated = sentence_translation.sentence_translated
+
+        if original.language == "en" and translated.language == "ua":
+            db.delete(sentence_translation)
+        elif original.language == "ua" and translated.language == "en":
+            db.delete(sentence_translation)
+        else:
+            continue
+
+    qq = db.query(Sentence).all()
+
+    for sentence_ua, sentence_en in data_converted:
+        sentence_en_db = db.query(Sentence).filter(Sentence.sentence == sentence_en, Sentence.language == "en").first()
+        sentence_ua_db = db.query(Sentence).filter(Sentence.sentence == sentence_ua, Sentence.language == "ua").first()
+        sentence_translation = SentenceTranslation()
+        sentence_translation.sentence_original_id = sentence_en_db.id
+        sentence_translation.sentence_translated_id = sentence_ua_db.id
+        db.add(sentence_translation)
+        sentence_translation = SentenceTranslation()
+        sentence_translation.sentence_original_id = sentence_ua_db.id
+        sentence_translation.sentence_translated_id = sentence_en_db.id
+        db.add(sentence_translation)
+    db.commit()
+
+    return {"message": "Sentences migrated successfully"}
