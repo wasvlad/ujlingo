@@ -3,7 +3,7 @@ from typing import List
 
 from database import get_db
 from database.models import SentenceTranslation, Sentence
-from .main import Result, QuestionJsonBase, QuestionInterface
+from .main import Result, QuestionJsonBase, QuestionInterface, QuestionTypeEnum
 
 
 class TranslationQuestion(QuestionInterface):
@@ -36,7 +36,7 @@ class TranslationQuestion(QuestionInterface):
 
 class ReorderQuestionJson(QuestionJsonBase):
     tokens: List[str]
-    type: int = 2
+    type: int = QuestionTypeEnum.reorder.value
 
 class ReorderTranslationQuestion(TranslationQuestion):
     def __init__(self, translation: SentenceTranslation):

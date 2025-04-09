@@ -3,12 +3,12 @@ from typing import List
 
 from database import get_db
 from database.models import WordTranslation, Word, User, WordTranslationKnowledge as TranslationKnowledge
-from .main import Result, QuestionJsonBase, QuestionInterface, KnowledgeSaverInterface
+from .main import Result, QuestionJsonBase, QuestionInterface, KnowledgeSaverInterface, QuestionTypeEnum
 
 
 class MSQQuestionJson(QuestionJsonBase):
     options: List[str]
-    type: int = 1
+    type: int = QuestionTypeEnum.msq.value
 
 class TranslationQuestion(QuestionInterface):
     _word_translation: WordTranslation

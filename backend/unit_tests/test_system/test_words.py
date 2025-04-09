@@ -2,7 +2,7 @@ from database import get_db
 from database.models import WordTranslation, Word, User, WordTranslationKnowledge as TranslationKnowledge
 from endpoints.user.hashing import hash_password
 from test_system.words import TranslationQuestion as Question, TranslationKnowledgeSaver, MSQQuestion, LanguageException
-from test_system.main import Result
+from test_system.main import Result, QuestionTypeEnum
 from unit_tests.tools import clear_database
 
 
@@ -46,7 +46,7 @@ class TestWordsTranslationQuestion:
     def test_get_question(self):
         result = self.question.get()
         assert result.question == f"Translate the word: {self.word_original}"
-        assert result.type == 0
+        assert result.type == QuestionTypeEnum.base.value
 
 
 class TestTranslationKnowledgeSaver:
@@ -142,7 +142,7 @@ class TestMSQQuestion:
         assert "bye" in result.options
         assert "hello" in result.options
         assert len(result.options) == 3
-        assert result.type == 1
+        assert result.type == QuestionTypeEnum.msq.value
 
     def test_give_answer_ok(self):
         result = self.question.give_answer("hi")

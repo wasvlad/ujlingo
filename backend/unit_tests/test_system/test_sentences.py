@@ -1,5 +1,6 @@
 from database import get_db
 from database.models import SentenceTranslation as Translation, Sentence
+from test_system.main import QuestionTypeEnum
 from test_system.sentences import TranslationQuestion, ReorderTranslationQuestion
 from unit_tests.tools import clear_database
 
@@ -103,4 +104,4 @@ class TestReorderTranslationQuestion:
             assert token in result.tokens
         for token in result.tokens:
             assert token in tokens
-        assert result.type == 2
+        assert result.type == QuestionTypeEnum.reorder.value
