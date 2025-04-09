@@ -11,8 +11,6 @@ class TranslationQuestion(QuestionInterface):
 
     def __init__(self, translation: SentenceTranslation):
         self._translation = translation
-        self._translation.sentence_original = self._translation.sentence_original
-        self._translation.sentence_translated = self._translation.sentence_translated
 
     def give_answer(self, answer: str) -> Result:
         db = next(get_db())
