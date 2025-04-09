@@ -1,3 +1,6 @@
+import random
+from typing import List
+
 from database import get_db
 from database.models import SentenceTranslation, Sentence
 from .main import Result, QuestionJsonBase, QuestionInterface
@@ -29,4 +32,26 @@ class TranslationQuestion(QuestionInterface):
 
     def get(self) -> QuestionJsonBase:
         result = QuestionJsonBase(question="Translate the sentence: " + self._translation.sentence_original.sentence)
+        return result
+
+class ReorderQuestionJson(QuestionJsonBase):
+    tokens: List[str]
+
+class ReorderTranslationQuestion(TranslationQuestion):
+    def __init__(self, translation: SentenceTranslation):
+        super().__init__(translation)
+        translated = translation.sentence_translated
+        words = translated.sentence.split(' ')
+        for i in range(len(words)):
+            last_symbol = words[i][-1]
+            if last_symbol in [',', '.', '!', '?']:
+                words[i] = words[i][:-1]
+                words.append(last_symbol)
+        random.shuffle(words)
+        self._tokens = words
+
+
+    def get(self) -> ReorderQuestionJson:
+        result_p = super().get()
+        result = ReorderQuestionJson(question=result_p.question, tokens=self._tokens)
         return result
