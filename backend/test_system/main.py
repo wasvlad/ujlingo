@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from database.models import User, WordTranslation
 from .caching import CachingInterface
@@ -13,6 +13,7 @@ class Result(BaseModel):
 
 class QuestionJsonBase(BaseModel):
     question: str
+    type: int = Field(default=0, description="0 - for base (this one), 1 - for MSQ, 2 - for reorder.")
 
 class QuestionInterface(ABC):
     @abstractmethod

@@ -8,6 +8,7 @@ from .main import Result, QuestionJsonBase, QuestionInterface, KnowledgeSaverInt
 
 class MSQQuestionJson(QuestionJsonBase):
     options: List[str]
+    type: int = 1
 
 class TranslationQuestion(QuestionInterface):
     _word_translation: WordTranslation

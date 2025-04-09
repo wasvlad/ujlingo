@@ -36,6 +36,7 @@ class TranslationQuestion(QuestionInterface):
 
 class ReorderQuestionJson(QuestionJsonBase):
     tokens: List[str]
+    type: int = 2
 
 class ReorderTranslationQuestion(TranslationQuestion):
     def __init__(self, translation: SentenceTranslation):

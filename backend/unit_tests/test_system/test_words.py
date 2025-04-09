@@ -46,6 +46,7 @@ class TestWordsTranslationQuestion:
     def test_get_question(self):
         result = self.question.get()
         assert result.question == f"Translate the word: {self.word_original}"
+        assert result.type == 0
 
 
 class TestTranslationKnowledgeSaver:
@@ -141,6 +142,7 @@ class TestMSQQuestion:
         assert "bye" in result.options
         assert "hello" in result.options
         assert len(result.options) == 3
+        assert result.type == 1
 
     def test_give_answer_ok(self):
         result = self.question.give_answer("hi")

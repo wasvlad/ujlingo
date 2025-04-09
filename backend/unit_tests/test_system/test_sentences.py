@@ -103,3 +103,4 @@ class TestReorderTranslationQuestion:
             assert token in result.tokens
         for token in result.tokens:
             assert token in tokens
+        assert result.type == 2
