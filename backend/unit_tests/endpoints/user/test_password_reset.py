@@ -79,7 +79,7 @@ class TestPasswordReset:
         })
 
         assert response.status_code == 400
-        assert response.json() == {"detail+": "New password cannot be the same as the old password"}
+        assert response.json() == {"detail": "New password cannot be the same as the old password"}
 
     def test_invalid_token(self, client):
 
