@@ -57,6 +57,36 @@ async def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"message": "User registered successfully"}
 
 
+class ResendVerificationEmailRequest(BaseModel):
+    email: EmailStr
+
+
+@router.post("/resend-verification-link", response_model=MessageResponse, responses={
+    400: {"model": ErrorResponse, "description": "Bad Request (not existing user)"},
+})
+async def resend_verification_link(data: ResendVerificationEmailRequest, db: Session = Depends(get_db)):
+    """
+    Resend verification link.
+    """
+    email = str(data.email).lower()
+    existing_user = db.query(User).filter(User.email == email).first()
+    if not existing_user:
+        raise HTTPException(status_code=400, detail="User is not registered")
+
+    token = generate_token(str(email), os.getenv("SECRET_KEY"))
+
+    front_end_url = os.getenv("FRONTEND_URL")
+
+    email_service = EmailNotificationService(existing_user)
+    email_service.send_notification("Confirm your email",
+                                    f"To confirm your email, click here: {front_end_url}/html/confirm_email.html?token={token}")
+
+
+    db.commit()
+
+    return {"message": "Verification link resent successfully"}
+
+
 @router.get("/confirm_email", response_model=MessageResponse, responses={
     400: {"model": ErrorResponse, "description": "Bad Request (Token expired, Invalid token)"},
     404: {"model": ErrorResponse, "description": "Not Found (User not found)"}

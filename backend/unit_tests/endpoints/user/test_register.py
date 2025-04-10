@@ -25,8 +25,8 @@ class TestRegisterUser:
 
     def test_register_user_success(self, client):
         with patch("endpoints.user.register.is_strong_password", return_value=True), \
-             patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
-             patch("endpoints.user.register.generate_token", return_value="token"):
+                patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
+                patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "test@example.com",
                 "password": "StrongPassword123!",
@@ -48,8 +48,8 @@ class TestRegisterUser:
 
     def test_register_user_email_uppercase_success(self, client):
         with patch("endpoints.user.register.is_strong_password", return_value=True), \
-             patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
-             patch("endpoints.user.register.generate_token", return_value="token"):
+                patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
+                patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "Test@example.com",
                 "password": "StrongPassword123!",
@@ -66,7 +66,7 @@ class TestRegisterUser:
 
     def test_register_user_weak_password(self, client):
         with patch("endpoints.user.register.hash_password", return_value="hashed_password"), \
-             patch("endpoints.user.register.generate_token", return_value="token"):
+                patch("endpoints.user.register.generate_token", return_value="token"):
             response = client.post("/user/register", json={
                 "email": "test@example.com",
                 "password": "weak_password",
@@ -102,6 +102,44 @@ class TestRegisterUser:
             assert added_user.email == "test@example.com"
 
 
+class TestResendVerificationLink:
+
+    @staticmethod
+    def setup_method():
+        DatabaseSession.close_all()
+        Base.metadata.drop_all(engine)
+        Base.metadata.create_all(engine)
+        db = next(get_db())
+        user = User(email="test@example.com", name="Test", surname="User", password_hash="hashed_password")
+        db.add(user)
+        db.commit()
+
+    @pytest.fixture
+    def client(self):
+        return TestClient(app)
+
+    def test_success(self, client):
+        response = client.post("/user/resend-verification-link", json={
+            "email": "test@example.com",
+        })
+        assert response.status_code == 200
+        assert response.json() == {"message": "Verification link resent successfully"}
+
+    def test_email_uppercase_success(self, client):
+        response = client.post("/user/resend-verification-link", json={
+            "email": "Test@exAmple.com",
+        })
+        assert response.status_code == 200
+        assert response.json() == {"message": "Verification link resent successfully"}
+
+    def test_not_existing_user(self, client):
+        response = client.post("/user/resend-verification-link", json={
+            "email": "wrong@example.com",
+        })
+        assert response.status_code == 400
+        assert response.json() == {"detail": "User is not registered"}
+
+
 class TestConfirmEmail:
 
     @pytest.fixture
@@ -118,7 +156,6 @@ class TestConfirmEmail:
         db.commit()
 
     def test_confirm_email_success(self, client):
-
         token = generate_token("test@example.com", os.getenv("SECRET_KEY"))
 
         response = client.get(f"/user/confirm_email?token={token}")
@@ -130,14 +167,12 @@ class TestConfirmEmail:
         assert user.is_confirmed is True
 
     def test_confirm_email_invalid_token(self, client):
-
         response = client.get("/user/confirm_email?token=invalid")
 
         assert response.status_code == 400
         assert response.json() == {"detail": "Invalid token"}
 
     def test_confirm_email_expired_token(self, client):
-
         token = generate_token("test@example.com", secret_key=os.getenv("SECRET_KEY"),
                                expiration_date=datetime.now(timezone.utc) - timedelta(minutes=5))
 
