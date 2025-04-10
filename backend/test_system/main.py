@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import List, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from database.models import User, WordTranslation
 from .caching import CachingInterface
@@ -11,8 +12,14 @@ class Result(BaseModel):
     is_correct: bool
     correct_answer: str
 
+class QuestionTypeEnum(Enum):
+    base = 0
+    msq = 1
+    reorder = 2
+
 class QuestionJsonBase(BaseModel):
     question: str
+    type: int = Field(default=QuestionTypeEnum.base.value, description="0 - for base (this one), 1 - for MSQ, 2 - for reorder.")
 
 class QuestionInterface(ABC):
     @abstractmethod
