@@ -52,7 +52,7 @@ class TestPasswordReset:
     def setup_method():
         clear_database()
         db = next(get_db())
-        db.add(User(email="test@example.com", name="Test", surname="User", password_hash=hash_password("old-password")))
+        db.add(User(email="test@example.com", name="Test", surname="User", password_hash=hash_password("old-password1A!")))
         db.commit()
 
     def test_ok(self, client):
@@ -68,7 +68,18 @@ class TestPasswordReset:
         db = next(get_db())
         user = db.query(User).filter(User.email == "test@example.com").first()
         assert verify_password("new-passwordA1!", user.password_hash)
-        assert not verify_password("old-password", user.password_hash)
+        assert not verify_password("old-password1A!", user.password_hash)
+
+    def test_same_password(self, client):
+
+        token = generate_token("test@example.com", os.getenv("PASSWORD_RESET_KEY"))
+
+        response = client.post(f"/user/reset-password?token={token}", json={
+            "password": "old-password1A!"
+        })
+
+        assert response.status_code == 400
+        assert response.json() == {"detail": "New password cannot be the same as the old password"}
 
     def test_invalid_token(self, client):
 
