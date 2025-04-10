@@ -52,18 +52,18 @@ class TestWordsTesting:
         assert result.status_code == 200
         assert result.json() == {"message": "Test session initialized"}
         for i in range(10):
-            result = client.get("/teaching/random/words/get_question")
+            result = client.get("/teaching/test/get_question")
             assert result.status_code == 200
             assert result.json().get("question", None) is not None
             logging.info("Got question: " + result.json().get("question"))
-            result = client.post("/teaching/random/words/answer_question",
+            result = client.post("/teaching/test/answer_question",
                                  json={"answer": self.word_translated.word})
             assert result.status_code == 200
             assert result.json().get("is_correct") is True
-        result = client.get("/teaching/random/words/get_question")
+        result = client.get("/teaching/test/get_question")
         assert result.status_code == 200
         assert result.json().get("message", None) is not None
-        result = client.post("/teaching/random/words/answer_question",
+        result = client.post("/teaching/test/answer_question",
                              json={"answer": self.word_translated.word})
         assert result.status_code == 400
         assert result.json() == {"detail": "Test session is not initialized"}
@@ -79,10 +79,10 @@ class TestWordsTesting:
         assert result.json() == {"detail": "Test session is already initialized"}
 
     def test_not_initialized(self, client):
-        result = client.get("/teaching/random/words/get_question")
+        result = client.get("/teaching/test/get_question")
         assert result.status_code == 400
         assert result.json() == {"detail": "Test session is not initialized"}
-        result = client.post("/teaching/random/words/answer_question",
+        result = client.post("/teaching/test/answer_question",
                              json={"answer": self.word_translated.word})
         assert result.status_code == 400
         assert result.json() == {"detail": "Test session is not initialized"}
@@ -92,11 +92,11 @@ class TestWordsTesting:
         assert result.status_code == 200
         assert result.json() == {"message": "Test session initialized"}
         for i in range(10):
-            result = client.post("/teaching/random/words/answer_question",
+            result = client.post("/teaching/test/answer_question",
                                  json={"answer": "wrong"})
             assert result.status_code == 200
             assert result.json().get("is_correct") is False
-        result = client.post("/teaching/random/words/answer_question",
+        result = client.post("/teaching/test/answer_question",
                              json={"answer": self.word_translated.word})
         assert result.status_code == 400
         assert result.json() == {"detail": "Test is finished"}
