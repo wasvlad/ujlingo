@@ -47,6 +47,8 @@ def validate_session(request: Request, db: DatabaseSession = Depends(get_db)) ->
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
     session = db.query(Session).filter(Session.token == access_token).first()
+    if session is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
     if not session.is_active:
         raise HTTPException(status_code=401, detail="Invalid token")
 
