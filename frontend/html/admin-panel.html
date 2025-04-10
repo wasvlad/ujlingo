@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Strona główna</title>
+  <title>Admin Panel</title>
   <link rel="stylesheet" href="../static/css/styles.css">
   <link rel="stylesheet" href="../static/css/confirm_email.css">
   <link rel="stylesheet" href="../static/css/buttons.css">
@@ -10,18 +10,18 @@
   <script src="../static/js/navbar-loader.js" defer></script>
 </head>
 <body>
-  <div class="background" id="background">
+  <div class="background">
     <div class="shape"></div>
     <div class="shape"></div>
     <div class="shape"></div>
     <div class="shape"></div>
   </div>
 
-  <h2 id="welcome">HomePage (In progress)</h2>
-  <button id="start-test-btn" class="main-btn">Start Test</button>
+  <h2 id="welcome">Admin Panel</h2>
+  <button id="sync-btn" class="main-btn">Synchronize</button>
 
-  <script src="../static/js/start-test.js" type="module"></script>
-  <script src="../static/js/validate-session.js"></script>
+  <script src="../static/js/synchronize.js" type="module"></script>
+  <script src="../static/js/validate-admin-session.js"></script>
   <script>
     window.addEventListener('DOMContentLoaded', checkSession);
     window.addEventListener('pageshow', checkSession);

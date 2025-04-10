@@ -7,24 +7,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const response = await fetch("/api/user/validate-session", {
+    const adminRes = await fetch("/api/admin/validate-session", {
       method: "GET",
       credentials: "include"
     });
 
-    if (response.ok) {
+    if (adminRes.ok) {
+      container.innerHTML = `
+        <button class="continue-btn" onclick="window.location.href='/html/admin-panel.html'">
+          Continue as Admin
+        </button>
+      `;
+      return;
+    }
+
+    const userRes = await fetch("/api/user/validate-session", {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (userRes.ok) {
       container.innerHTML = `
         <button class="continue-btn" onclick="window.location.href='/html/main.html'">
           Continue Learning
         </button>
       `;
     } else {
-      container.innerHTML = `
-        <button class="signin-btn" style="margin-bottom: 20px;" onclick="window.location.href='/html/login.html'">
-          Sign In
-        </button>
-        <button onclick="window.location.href='/html/register.html'">Register</button>
-      `;
+      throw new Error("Unauthorized");
     }
   } catch (err) {
     console.error("Session check failed:", err);
