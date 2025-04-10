@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from database.models import User
-from .hashing import hash_password
+from .hashing import hash_password, verify_password
 from .tools import is_strong_password, generate_token
 from endpoints.tools import MessageResponse, ErrorResponse
 from notifications.email import EmailNotificationService
@@ -59,6 +59,9 @@ async def reset_password(token: str, data: ResetPassword , db: Session = Depends
     user = db.query(User).filter(User.email == payload["email"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    if verify_password(data.password, str(user.password_hash)):
+        raise HTTPException(status_code=400, detail="New password cannot be the same as the old password")
 
     if not is_strong_password(data.password):
         raise HTTPException(status_code=400, detail="Password is weak")
