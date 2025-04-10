@@ -2,8 +2,8 @@ import random
 from typing import List
 
 from database import get_db
-from database.models import SentenceTranslation, Sentence
-from .main import Result, QuestionJsonBase, QuestionInterface, QuestionTypeEnum
+from database.models import SentenceTranslation, Sentence, User, SentenceTranslationKnowledge as TranslationKnowledge
+from .main import Result, QuestionJsonBase, QuestionInterface, QuestionTypeEnum, KnowledgeSaverInterface
 
 
 class TranslationQuestion(QuestionInterface):
@@ -54,3 +54,46 @@ class ReorderTranslationQuestion(TranslationQuestion):
         result_p = super().get()
         result = ReorderQuestionJson(question=result_p.question, tokens=self._tokens)
         return result
+
+class TranslationKnowledgeSaver(KnowledgeSaverInterface):
+    def __init__(self, user: User, translation: SentenceTranslation):
+        self._user_id = user.id
+        self._translation_id = translation.id
+        self._difference = 0
+
+    def answered(self, result: Result):
+        db = next(get_db())
+        knowledge = db.query(TranslationKnowledge).filter(
+            TranslationKnowledge.user_id == self._user_id,
+            TranslationKnowledge.sentence_translation_id == self._translation_id
+        ).first()
+        if not knowledge:
+            knowledge = TranslationKnowledge(user_id=self._user_id, sentence_translation_id=self._translation_id)
+            knowledge.knowledge = 0
+            db.add(knowledge)
+        knowledge.knowledge += self._difference
+        if result.is_correct:
+            knowledge.knowledge += 20
+        else:
+            knowledge.knowledge -= 50
+        knowledge.knowledge = min(100, knowledge.knowledge)
+        knowledge.knowledge = max(0, knowledge.knowledge)
+        db.commit()
+
+    def asked(self):
+        db = next(get_db())
+        knowledge = db.query(TranslationKnowledge).filter(
+            TranslationKnowledge.user_id == self._user_id,
+            TranslationKnowledge.sentence_translation_id == self._translation_id
+        ).first()
+        if not knowledge:
+            knowledge = TranslationKnowledge(user_id=self._user_id, sentence_translation_id=self._translation_id)
+            self._difference = 0
+            db.add(knowledge)
+        else:
+            was = knowledge.knowledge
+            knowledge.knowledge -= 25
+            knowledge.knowledge = min(100, knowledge.knowledge)
+            knowledge.knowledge = max(0, knowledge.knowledge)
+            self._difference = was - knowledge.knowledge
+        db.commit()
