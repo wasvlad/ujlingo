@@ -64,7 +64,7 @@ class EmailJSON(BaseModel):
 @router.post("/resend-verification-link", response_model=MessageResponse, responses={
     400: {"model": ErrorResponse, "description": "Bad Request (not existing user)"},
 })
-async def register_user(data: EmailJSON, db: Session = Depends(get_db)):
+async def resend_verification_link(data: EmailJSON, db: Session = Depends(get_db)):
     """
     Resend verification link.
     """
