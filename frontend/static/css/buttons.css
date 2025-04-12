@@ -52,3 +52,16 @@ button:hover {
   background-color: rgba(0, 0, 0, 0.95);
   color: #fff;
 }
+
+.main-btn {
+  min-width: 400px;
+  background-color: rgba(255, 255, 255, 0.13);
+  color: #418041;
+  border: 2px solid #418041;
+  margin: 60px;
+}
+
+.main-btn:hover {
+  background-color: #418041;
+  color: white;
+}

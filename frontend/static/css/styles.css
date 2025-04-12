@@ -26,6 +26,14 @@ input:focus {
   color: #C9002B;
 }
 
+#question-container {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 30px;
+  color: #004B93;
+  margin-bottom: 20px;
+}
+
 h2 {
   font-size: 28px;
   color: #000;

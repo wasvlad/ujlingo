@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../static/css/styles.css">
+  <link rel="stylesheet" href="../static/css/buttons.css">
+  <link rel="stylesheet" href="../static/css/forms.css">
+  <link rel="stylesheet" href="../static/css/background_v2.css">
+  <script src="../static/js/navbar-loader.js" defer></script>
+</head>
+<body>
+  <div class="background" id="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <div class="form-container">
+    <form id="answer-form">
+      <div id="question-container">
+        <p id="question-text">Loading question...</p>
+      </div>
+      <div class="form-group">
+        <input type="text" id="answer-input" name="answer" placeholder="Enter your answer" required>
+      </div>
+      <button type="submit" id="submit-answer-btn">Submit Answer</button>
+      <button class="go-back-btn" id="test-finished-btn" style="display: none;" onclick="window.location.href='main.html'">Go Back</button>
+    </form>
+
+    <p id="response-message"></p>
+  </div>
+  <script src="../static/js/test-handler.js" type="module"></script>
+  <script src="../static/js/validate-session.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', checkSession);
+    window.addEventListener('pageshow', checkSession);
+  </script>
+</body>
+</html>

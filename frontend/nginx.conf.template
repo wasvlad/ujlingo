@@ -26,6 +26,12 @@ http {
             try_files $uri $uri/ =404;
         }
 
+        location = /favicon.ico {
+            return 302 /static/images/languages.png;
+            access_log off;
+            log_not_found off;
+        }
+
         location /api/ {
             rewrite ^/api/(.*)$ /$1 break;
             proxy_pass ${BACKEND_URL};
