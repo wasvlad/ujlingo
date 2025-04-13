@@ -6,12 +6,14 @@ from endpoints.tools import MessageResponse, ErrorResponse
 from endpoints.user.tools import validate_session
 from test_system.caching import RedisCaching, RedisCachingException as CachingException
 from test_system.main import QuestionJsonBase, Test, Result, NoQuestionsException
+from test_system.words import MSQQuestionJson
+from test_system.sentences import ReorderQuestionJson
 
 
 router = APIRouter()
 
 
-@router.get("/get_question", response_model=QuestionJsonBase | MessageResponse, responses={
+@router.get("/get_question", response_model=QuestionJsonBase | MSQQuestionJson | ReorderQuestionJson | MessageResponse, responses={
     400: {"model": ErrorResponse, "description": "Bad Request: Test session is not initialized"},
     200: {"description": "Current question or message that test is finished"}
 })
