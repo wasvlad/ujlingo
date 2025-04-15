@@ -133,7 +133,7 @@ class TestMSQQuestion:
         db.expunge(self.word_bye)
         db.refresh(self.word_ua)
         db.expunge(self.word_ua)
-        self.question = MSQQuestion(self.word_translation, options=[self.word_translated2, self.word_bye])
+        self.question = MSQQuestion(self.word_translation, options=[self.word_translated2, self.word_bye, "wrong"])
 
     def test_get(self):
         result = self.question.get()
@@ -141,7 +141,8 @@ class TestMSQQuestion:
         assert "hi" in result.options
         assert "bye" in result.options
         assert "hello" in result.options
-        assert len(result.options) == 3
+        assert "wrong" in result.options
+        assert len(result.options) == 4
         assert result.type == QuestionTypeEnum.msq.value
 
     def test_give_answer_ok(self):
