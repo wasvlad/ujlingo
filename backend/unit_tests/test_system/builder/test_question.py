@@ -1,6 +1,6 @@
 from test_system.builder.question import *
 from database import get_db
-from database.models import Word
+from database.models import Word, WordTranslation, WordTranslationKnowledge
 from test_system.main import QuestionTypeEnum
 from unit_tests.tools import clear_database
 
@@ -49,3 +49,56 @@ class TestBuildMsqQuestionTest:
         assert question_json.question == f"Translate the word: {translation.word_original.word}"
         assert word_en.word in question_json.options
         assert word_en2.word in question_json.options
+
+class TestGetNewWords:
+    def setup_method(self):
+        clear_database()
+        self.user = User(email="test@example.com", name="Test", surname="User", password_hash="<PASSWORD>")
+        self.user.is_confirmed = True
+        self.db = next(get_db())
+        self.db.add(self.user)
+        self.db.commit()
+        self.word_en = "hello"
+        self.word_ua = "привіт"
+        self.word_en2 = "hi"
+        self.word_en_db = Word(word=self.word_en, language="en")
+        self.word_ua_db = Word(word=self.word_ua, language="ua")
+        self.word_en2_db = Word(word=self.word_en2, language="en")
+        self.db.add_all([self.word_en_db, self.word_ua_db, self.word_en2_db])
+        self.db.commit()
+        self.word_translation = WordTranslation(word_translated_id=self.word_en_db.id, word_original_id=self.word_ua_db.id)
+        self.word_translation2 = WordTranslation(word_translated_id=self.word_en2_db.id, word_original_id=self.word_ua_db.id)
+        self.db.add_all([self.word_translation, self.word_translation2])
+        self.db.commit()
+
+    def test_ok(self):
+        self.db.commit()
+        knowledge1 = WordTranslationKnowledge(word_translation_id=self.word_translation.id, knowledge=0,
+                                              user_id=self.user.id)
+        self.db.add_all([knowledge1])
+        self.db.commit()
+        new_words = get_new_words(2, 10)
+        assert len(new_words) == 2
+        assert new_words[0].id == self.word_translation.id or new_words[0].id == self.word_translation2.id
+        assert new_words[1].id == self.word_translation.id or new_words[1].id == self.word_translation2.id
+        assert new_words[0].id != new_words[1].id
+
+    def test_small_knowledge(self):
+        self.db.commit()
+        knowledge1 = WordTranslationKnowledge(word_translation_id=self.word_translation.id, knowledge=10,
+                                              user_id=self.user.id)
+        self.db.add_all([knowledge1])
+        self.db.commit()
+        new_words = get_new_words(2, 0)
+        assert len(new_words) == 1
+        assert new_words[0].id == self.word_translation2.id
+
+    def test_number_one(self):
+        self.db.commit()
+        knowledge1 = WordTranslationKnowledge(word_translation_id=self.word_translation.id, knowledge=10,
+                                              user_id=self.user.id)
+        self.db.add_all([knowledge1])
+        self.db.commit()
+        new_words = get_new_words(1, 30)
+        assert len(new_words) == 1
+        assert new_words[0].id == self.word_translation.id or new_words[0].id == self.word_translation2.id

@@ -1,4 +1,5 @@
 from random import randint
+from typing import List
 
 from sqlalchemy import func
 
@@ -6,12 +7,14 @@ from database import get_db
 from database.models import User, WordTranslation, WordTranslationKnowledge, Word
 from ..words import TranslationQuestion, MSQQuestion
 
+
 def build_msq_question(translation: WordTranslation) -> MSQQuestion:
     db = next(get_db())
     wrong_word: Word = db.query(Word).filter((Word.language == translation.word_translated.language) &
-                                    (Word.word != translation.word_translated.word))\
+                                             (Word.word != translation.word_translated.word)) \
         .order_by(func.random()).first()
     options = []
+
     def change_word(word: str) -> str:
         word_new = list(word)
         if len(word) <= 1:
@@ -42,17 +45,21 @@ def build_msq_question(translation: WordTranslation) -> MSQQuestion:
     return question
 
 
-# def get_new_words_questions(user: User, number: int = 10, max_knowledge: int = 10) -> list:
-#     db = next(get_db())
-#     questions = []
-#
-#     translations = db.query(WordTranslation) \
-#         .join(WordTranslationKnowledge, WordTranslationKnowledge.word_translation_id == WordTranslation.id) \
-#         .filter(WordTranslationKnowledge.knowledge <= max_knowledge or WordTranslationKnowledge.knowledge is None) \
-#         .order_by(func.random()) \
-#         .limit(number).all()
-#
-#     for translation in translations:
-#
-#
-#     return questions
+def get_new_words(number: int = 10, max_knowledge: int = 10) -> List[WordTranslation]:
+    db = next(get_db())
+    translations = []
+
+    translations_db = db.query(WordTranslation, WordTranslationKnowledge) \
+        .join(WordTranslationKnowledge, WordTranslationKnowledge.word_translation_id == WordTranslation.id, isouter=True) \
+        .filter((WordTranslationKnowledge.knowledge <= max_knowledge) | (WordTranslationKnowledge.id == None)) \
+        .order_by(func.random()) \
+        .limit(number).all()
+
+    for translation, knowledge in translations_db:
+        db.refresh(translation)
+        db.refresh(translation.word_original)
+        db.refresh(translation.word_translated)
+        db.expunge(translation)
+        translations.append(translation)
+
+    return translations
