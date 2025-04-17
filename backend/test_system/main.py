@@ -88,7 +88,7 @@ class Test:
         if caching_class is None:
             self._caching = None
         else:
-            self._caching = caching_class(f"tests:user:{user.id}", self)
+            self._caching = caching_class(f"test:user:{user.id}", self)
             self._caching.write()
 
     def get_question(self) -> QuestionJsonBase | None:
@@ -117,5 +117,5 @@ class Test:
 
     @staticmethod
     def load_from_cache(user: User, caching_class: Type[CachingInterface]) -> 'Test':
-        instance: Test = caching_class.load(f"tests:user:{user.id}")
+        instance: Test = caching_class.load(f"test:user:{user.id}")
         return instance
