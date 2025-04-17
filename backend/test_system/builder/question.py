@@ -45,7 +45,7 @@ def build_msq_question(translation: WordTranslation) -> MSQQuestion:
     return question
 
 
-def get_new_words(number: int = 10, max_knowledge: int = 10) -> List[WordTranslation]:
+def get_new_translations(number: int = 10, max_knowledge: int = 10) -> List[WordTranslation]:
     db = next(get_db())
     translations = []
 

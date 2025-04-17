@@ -77,7 +77,7 @@ class TestGetNewWords:
                                               user_id=self.user.id)
         self.db.add_all([knowledge1])
         self.db.commit()
-        new_words = get_new_words(2, 10)
+        new_words = get_new_translations(2, 10)
         assert len(new_words) == 2
         assert new_words[0].id == self.word_translation.id or new_words[0].id == self.word_translation2.id
         assert new_words[1].id == self.word_translation.id or new_words[1].id == self.word_translation2.id
@@ -89,7 +89,7 @@ class TestGetNewWords:
                                               user_id=self.user.id)
         self.db.add_all([knowledge1])
         self.db.commit()
-        new_words = get_new_words(2, 0)
+        new_words = get_new_translations(2, 0)
         assert len(new_words) == 1
         assert new_words[0].id == self.word_translation2.id
 
@@ -99,6 +99,6 @@ class TestGetNewWords:
                                               user_id=self.user.id)
         self.db.add_all([knowledge1])
         self.db.commit()
-        new_words = get_new_words(1, 30)
+        new_words = get_new_translations(1, 30)
         assert len(new_words) == 1
         assert new_words[0].id == self.word_translation.id or new_words[0].id == self.word_translation2.id
