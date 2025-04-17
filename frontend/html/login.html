@@ -34,11 +34,14 @@
       </div>
 
       <button type="submit">Log In</button>
-      <p id="message"></p>
-      <p id="login-session-link" style="margin-top: 15px;"></p>
-      <p style="margin-top: 10px;">
+      <div class="notice-border">
+        <p id="message"></p>
+        <a href="/html/resend-mail.html" id="resend-mail-link" class="clickable-link" style="display: none;">
+          Resend verification e-mail
+        </a>
+        <p id="login-session-link"></p>
         <a href="/html/request-reset.html" class="clickable-link">Forgot password?</a>
-      </p>
+      </div>
     </form>
 
     <button class="go-back-btn" onclick="window.location.href='/'">Go Back</button>

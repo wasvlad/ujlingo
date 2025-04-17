@@ -1,6 +1,6 @@
 async function loadQuestion() {
   try {
-    const res = await fetch("/api/teaching/random/words/get_question", {
+    const res = await fetch("/api/teaching/test/get_question", {
       method: "GET",
       credentials: "include"
     });
@@ -21,6 +21,9 @@ async function loadQuestion() {
       }
     } else {
       questionEl.textContent = data.question || "Failed to load question";
+      document.getElementById("answer-input").style.display = "none";
+      document.getElementById("submit-answer-btn").style.display = "none";
+      document.getElementById("test-finished-btn").style.display = "block";
     }
   } catch (err) {
     console.error("Load question error:", err);
@@ -41,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const res = await fetch("/api/teaching/random/words/answer_question", {
+      const res = await fetch("/api/teaching/test/answer_question", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

@@ -7,6 +7,9 @@ const notice = urlParams.get('notice');
 if (notice === 'success') {
   message.textContent = "Registration completed successfully. Please check your email inbox and click the activation link.";
   message.style.color = 'green';
+} else if (notice === 'resend-success') {
+  message.textContent = "Verification e-mail has been resent successfully. Please check your inbox.";
+  message.style.color = 'green';
 } else if (token) {
   fetch(`/api/user/confirm_email?token=${encodeURIComponent(token)}`)
     .then(async response => {

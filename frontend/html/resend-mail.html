@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Resend Verification E-Mail</title>
+  <link rel="stylesheet" href="../static/css/styles.css">
+  <link rel="stylesheet" href="../static/css/forms.css">
+  <link rel="stylesheet" href="../static/css/buttons.css">
+  <link rel="stylesheet" href="../static/css/background_v2.css">
+</head>
+<body>
+  <div class="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <div class="form-container">
+    <form id="resend-form">
+      <h3>Resend Verification E-Mail</h3>
+
+      <div class="form-group">
+        <input type="email" name="email" id="email" placeholder=" " required>
+        <label for="email">E-mail</label>
+      </div>
+
+      <button type="submit">Resend</button>
+      <p id="status-message" style="margin-top: 15px;"></p>
+    </form>
+    <button class="go-back-btn" onclick="window.location.href='/html/login.html?notice=unconfirmed'">Go Back</button>
+  </div>
+
+  <script src="../static/js/resend-mail.js"></script>
+</body>
+</html>
