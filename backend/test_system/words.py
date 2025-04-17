@@ -44,20 +44,27 @@ class LanguageException(Exception):
 
 
 class MSQQuestion(TranslationQuestion):
-    def __init__(self, translation: WordTranslation, options: List[Word] = None):
+    def __init__(self, translation: WordTranslation, options: List[Word | str] = None):
         super().__init__(translation)
         if options is None:
             options = []
-        self._possible_answers = options
-        self._possible_answers.append(translation.word_translated)
-        for word in self._possible_answers:
+        self._possible_answers: List[str] = []
+        for word in options:
+            if isinstance(word, str):
+                self._possible_answers.append(word)
+                continue
+            elif not isinstance(word, Word):
+                raise TypeError("Options should be str or Word")
             if word.language != translation.word_translated.language:
                 raise LanguageException("Options language should be as language of translated word")
+            self._possible_answers.append(word.word)
+        if not translation.word_translated.word in self._possible_answers:
+            self._possible_answers.append(translation.word_translated.word)
         shuffle(self._possible_answers)
 
     def get(self) -> MSQQuestionJson:
         result_p = super().get()
-        options = [word.word for word in self._possible_answers]
+        options = [word for word in self._possible_answers]
         result = MSQQuestionJson(question=result_p.question, options=options)
         return result
 
