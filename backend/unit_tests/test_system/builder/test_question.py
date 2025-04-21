@@ -127,14 +127,14 @@ class TestGetBadKnowledgeWords:
         self.db.commit()
 
     def test_ok(self):
-        bad_words = get_translations_bad_knowledge(2)
+        bad_words = get_translations_weak_knowledge(2)
         assert len(bad_words) == 1
         assert bad_words[0].id == self.word_translation.id
 
     def test_big_min(self):
-        new_words = get_translations_bad_knowledge(2, min_knowledge=40)
+        new_words = get_translations_weak_knowledge(2, min_knowledge=40)
         assert len(new_words) == 0
 
     def test_small_max(self):
-        new_words = get_translations_bad_knowledge(2, max_knowledge=20)
+        new_words = get_translations_weak_knowledge(2, max_knowledge=20)
         assert len(new_words) == 0

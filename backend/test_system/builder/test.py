@@ -5,7 +5,7 @@ from typing import Type
 from database.models import User
 from test_system.caching import CachingInterface
 from test_system.main import Test, QuestionProxy
-from test_system.builder.question import get_new_translations, build_msq_question, get_translations_bad_knowledge
+from test_system.builder.question import get_new_translations, build_msq_question, get_translations_weak_knowledge
 from test_system.words import TranslationKnowledgeSaver, TranslationQuestion
 
 
@@ -24,8 +24,8 @@ class TestBuilder:
             question = QuestionProxy(question, TranslationKnowledgeSaver(self.__user, translation))
             self.__questions.append(question)
 
-    def add_bad_knowledge_words(self, number: int = 10) -> None:
-        translations = get_translations_bad_knowledge(number)
+    def add_weak_knowledge_words(self, number: int = 10) -> None:
+        translations = get_translations_weak_knowledge(number)
         for translation in translations:
             if randint(0, 1) == 0:
                 question = build_msq_question(translation)
