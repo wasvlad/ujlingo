@@ -102,7 +102,7 @@ class TestGetNewWords:
         assert new_words[0].id == self.word_translation.id or new_words[0].id == self.word_translation2.id
 
 
-class TestGetBadKnowledgeWords:
+class TestGetWeakKnowledgeWords:
     def setup_method(self):
         clear_database()
         self.user = User(email="test@example.com", name="Test", surname="User", password_hash="<PASSWORD>")

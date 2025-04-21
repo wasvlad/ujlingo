@@ -25,7 +25,7 @@ async def init_test_new_words(user: User = Depends(validate_session)):
     400: {"model": ErrorResponse, "description": "Bad Request: Test session is already initialized"}
 })
 async def init_test_weak_knowledge_words(user: User = Depends(validate_session)):
-    """Init test with bad knowledge words"""
+    """Init test with weak knowledge words"""
     try:
         builder = TestBuilder(user)
         builder.add_weak_knowledge_words(10)
