@@ -12,9 +12,23 @@ router = APIRouter()
     400: {"model": ErrorResponse, "description": "Bad Request: Test session is already initialized"}
 })
 async def init_test_new_words(user: User = Depends(validate_session)):
+    """Initialize a test session with new words."""
     try:
         builder = TestBuilder(user)
         builder.add_new_words(10)
+        builder.build(caching_class=RedisCaching)
+    except CachingException:
+        raise HTTPException(status_code=400, detail="Test session is already initialized")
+    return MessageResponse(message="Test session initialized")
+
+@router.post("/weak-knowledge", response_model=MessageResponse, responses={
+    400: {"model": ErrorResponse, "description": "Bad Request: Test session is already initialized"}
+})
+async def init_test_weak_knowledge_words(user: User = Depends(validate_session)):
+    """Init test with weak knowledge words"""
+    try:
+        builder = TestBuilder(user)
+        builder.add_weak_knowledge_words(10)
         builder.build(caching_class=RedisCaching)
     except CachingException:
         raise HTTPException(status_code=400, detail="Test session is already initialized")
