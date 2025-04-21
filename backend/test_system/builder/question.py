@@ -64,7 +64,7 @@ def get_new_translations(number: int = 10, max_knowledge: int = 10) -> List[Word
 
     return translations
 
-def get_translations_weak_knowledge(number: int = 10, min_knowledge = 10, max_knowledge: int = 70) -> List[WordTranslation]:
+def get_translations_weak_knowledge(number: int = 10, min_knowledge: int = 10, max_knowledge: int = 70) -> List[WordTranslation]:
     db = next(get_db())
     translations = []
 
