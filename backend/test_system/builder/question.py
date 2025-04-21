@@ -63,3 +63,22 @@ def get_new_translations(number: int = 10, max_knowledge: int = 10) -> List[Word
         translations.append(translation)
 
     return translations
+
+def get_translations_bad_knowledge(number: int = 10, min_knowledge = 10, max_knowledge: int = 70) -> List[WordTranslation]:
+    db = next(get_db())
+    translations = []
+
+    translations_db = db.query(WordTranslation, WordTranslationKnowledge) \
+        .join(WordTranslationKnowledge, WordTranslationKnowledge.word_translation_id == WordTranslation.id, isouter=True) \
+        .filter((WordTranslationKnowledge.knowledge <= max_knowledge) & (WordTranslationKnowledge.knowledge >= min_knowledge)) \
+        .order_by(func.random()) \
+        .limit(number).all()
+
+    for translation, knowledge in translations_db:
+        db.refresh(translation)
+        db.refresh(translation.word_original)
+        db.refresh(translation.word_translated)
+        db.expunge(translation)
+        translations.append(translation)
+
+    return translations
