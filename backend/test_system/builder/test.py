@@ -9,17 +9,21 @@ from test_system.builder.question import get_new_translations, build_msq_questio
 from test_system.words import TranslationKnowledgeSaver, TranslationQuestion
 
 
-class NewWordsTestBuilder:
-    @staticmethod
-    def build(user: User, number: int = 10, caching_class: Type[CachingInterface] | None = None) -> Test:
-        questions = []
+class TestBuilder:
+    def __init__(self, user: User):
+        self.__questions = []
+        self.__user = user
+
+    def add_new_words(self, number: int = 10) -> None:
         translations = get_new_translations(number, 10)
         for translation in translations:
             if randint(0, 1) == 0:
                 question = build_msq_question(translation)
             else:
                 question = TranslationQuestion(translation)
-            question = QuestionProxy(question, TranslationKnowledgeSaver(user, translation))
-            questions.append(question)
-        test = Test(user, questions, caching_class)
+            question = QuestionProxy(question, TranslationKnowledgeSaver(self.__user, translation))
+            self.__questions.append(question)
+
+    def build(self, caching_class: Type[CachingInterface] | None = None) -> Test:
+        test = Test(self.__user, self.__questions, caching_class)
         return test
