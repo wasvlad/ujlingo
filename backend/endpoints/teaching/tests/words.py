@@ -24,7 +24,7 @@ async def init_test_new_words(user: User = Depends(validate_session)):
 @router.post("/bad", response_model=MessageResponse, responses={
     400: {"model": ErrorResponse, "description": "Bad Request: Test session is already initialized"}
 })
-async def init_test_new_words(user: User = Depends(validate_session)):
+async def init_test_weak_words(user: User = Depends(validate_session)):
     """Init test with bad knowledge words"""
     try:
         builder = TestBuilder(user)
