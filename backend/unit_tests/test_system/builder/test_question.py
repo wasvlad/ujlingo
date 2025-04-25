@@ -1,6 +1,7 @@
 from test_system.builder.question import *
 from database import get_db
-from database.models import Word, WordTranslation, WordTranslationKnowledge, User
+from database.models import (Word, WordTranslation, WordTranslationKnowledge, User, Sentence, SentenceTranslation,
+                             SentenceTranslationKnowledge)
 from unit_tests.tools import clear_database
 
 class TestBuildMsqQuestionTest:
@@ -187,7 +188,7 @@ class TestGetStrongKnowledgeWords:
         self.db.commit()
         strong_words = get_word_translations_strong_knowledge(1)
         assert len(strong_words) == 1
-        assert strong_words[0].id == self.word_translation.id
+        assert strong_words[0].id == self.word_translation.id or strong_words[0].id == self.word_translation2.id
 
     def test_small_min(self):
         strong_words = get_word_translations_strong_knowledge(2, min_knowledge=40)

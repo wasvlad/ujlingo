@@ -51,7 +51,7 @@ def get_new_word_translations(number: int = 10, max_knowledge: int = 10) -> List
 
     translations_db = db.query(WordTranslation, WordTranslationKnowledge) \
         .join(WordTranslationKnowledge, WordTranslationKnowledge.word_translation_id == WordTranslation.id, isouter=True) \
-        .filter((WordTranslationKnowledge.knowledge <= max_knowledge) | (WordTranslationKnowledge.id == None)) \
+        .filter((WordTranslationKnowledge.knowledge <= max_knowledge) | (WordTranslationKnowledge.id.is_(None))) \
         .order_by(func.random()) \
         .limit(number).all()
 
@@ -109,7 +109,7 @@ def get_new_sentence_translations(number: int = 10, max_knowledge: int = 10) -> 
 
     translations_db = db.query(SentenceTranslation, SentenceTranslationKnowledge) \
         .join(SentenceTranslationKnowledge, SentenceTranslationKnowledge.sentence_translation_id == SentenceTranslation.id, isouter=True) \
-        .filter((SentenceTranslationKnowledge.knowledge <= max_knowledge) | (SentenceTranslationKnowledge.id == None)) \
+        .filter((SentenceTranslationKnowledge.knowledge <= max_knowledge) | (SentenceTranslationKnowledge.id.is_(None))) \
         .order_by(func.random()) \
         .limit(number).all()
 
