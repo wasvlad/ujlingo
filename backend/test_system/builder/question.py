@@ -82,3 +82,23 @@ def get_translations_weak_knowledge(number: int = 10, min_knowledge: int = 10, m
         translations.append(translation)
 
     return translations
+
+
+def get_translations_strong_knowledge(number: int = 10, min_knowledge: int = 70) -> List[WordTranslation]:
+    db = next(get_db())
+    translations = []
+
+    translations_db = db.query(WordTranslation, WordTranslationKnowledge) \
+        .join(WordTranslationKnowledge, WordTranslationKnowledge.word_translation_id == WordTranslation.id, isouter=True) \
+        .filter(WordTranslationKnowledge.knowledge >= min_knowledge) \
+        .order_by(func.random()) \
+        .limit(number).all()
+
+    for translation, knowledge in translations_db:
+        db.refresh(translation)
+        db.refresh(translation.word_original)
+        db.refresh(translation.word_translated)
+        db.expunge(translation)
+        translations.append(translation)
+
+    return translations
