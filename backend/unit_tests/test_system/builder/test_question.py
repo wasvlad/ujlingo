@@ -176,8 +176,9 @@ class TestGetStrongKnowledgeWords:
         self.db.commit()
         strong_words = get_translations_strong_knowledge(2)
         assert len(strong_words) == 2
-        assert strong_words[0].id == self.word_translation.id or strong_words[1].id == self.word_translation.id
-        assert strong_words[0].id == self.word_translation2.id or strong_words[1].id == self.word_translation2.id
+        assert strong_words[0].id in [self.word_translation.id, self.word_translation2.id]
+        assert strong_words[1].id in [self.word_translation.id, self.word_translation2.id]
+        assert strong_words[0].id != strong_words[1].id
 
     def test_ok3(self):
         knowledge2 = WordTranslationKnowledge(user_id=self.user.id, word_translation_id=self.word_translation2.id,
