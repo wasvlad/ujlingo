@@ -138,3 +138,67 @@ class TestGetWeakKnowledgeWords:
     def test_small_max(self):
         new_words = get_translations_weak_knowledge(2, max_knowledge=20)
         assert len(new_words) == 0
+
+
+class TestGetStrongKnowledgeWords:
+    def setup_method(self):
+        clear_database()
+        self.user = User(email="test@example.com", name="Test", surname="User", password_hash="<PASSWORD>")
+        self.user.is_confirmed = True
+        self.db = next(get_db())
+        self.db.add(self.user)
+        self.db.commit()
+        self.word_en = "hello"
+        self.word_ua = "привіт"
+        self.word_en2 = "hi"
+        self.word_en_db = Word(word=self.word_en, language="en")
+        self.word_ua_db = Word(word=self.word_ua, language="ua")
+        self.word_en2_db = Word(word=self.word_en2, language="en")
+        self.db.add_all([self.word_en_db, self.word_ua_db, self.word_en2_db])
+        self.db.commit()
+        self.word_translation = WordTranslation(word_translated_id=self.word_en_db.id, word_original_id=self.word_ua_db.id)
+        self.word_translation2 = WordTranslation(word_translated_id=self.word_en2_db.id, word_original_id=self.word_ua_db.id)
+        self.db.add_all([self.word_translation, self.word_translation2])
+        self.db.commit()
+        self.knowledge1 = WordTranslationKnowledge(user_id=self.user.id, word_translation_id=self.word_translation.id, knowledge=100)
+        self.db.add(self.knowledge1)
+        self.db.commit()
+
+    def test_ok(self):
+        strong_words = get_translations_strong_knowledge(2)
+        assert len(strong_words) == 1
+        assert strong_words[0].id == self.word_translation.id
+
+    def test_ok2(self):
+        knowledge2 = WordTranslationKnowledge(user_id=self.user.id, word_translation_id=self.word_translation2.id,
+                                                   knowledge=80)
+        self.db.add(knowledge2)
+        self.db.commit()
+        strong_words = get_translations_strong_knowledge(2)
+        assert len(strong_words) == 2
+        assert strong_words[0].id in [self.word_translation.id, self.word_translation2.id]
+        assert strong_words[1].id in [self.word_translation.id, self.word_translation2.id]
+        assert strong_words[0].id != strong_words[1].id
+
+    def test_ok3(self):
+        knowledge2 = WordTranslationKnowledge(user_id=self.user.id, word_translation_id=self.word_translation2.id,
+                                                   knowledge=80)
+        self.db.add(knowledge2)
+        self.db.commit()
+        strong_words = get_translations_strong_knowledge(1)
+        assert len(strong_words) == 1
+        assert strong_words[0].id == self.word_translation.id
+
+    def test_small_min(self):
+        strong_words = get_translations_strong_knowledge(2, min_knowledge=40)
+        assert len(strong_words) == 1
+        assert strong_words[0].id == self.word_translation.id
+
+    def test_big_min(self):
+        knowledge2 = WordTranslationKnowledge(user_id=self.user.id, word_translation_id=self.word_translation2.id,
+                                                   knowledge=80)
+        self.db.add(knowledge2)
+        self.db.commit()
+        strong_words = get_translations_strong_knowledge(2, min_knowledge=90)
+        assert len(strong_words) == 1
+        assert strong_words[0].id == self.word_translation.id
