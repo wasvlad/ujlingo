@@ -5,9 +5,10 @@ from typing import Type
 from database.models import User
 from test_system.caching import CachingInterface
 from test_system.main import Test, QuestionProxy
-from test_system.builder.question import get_new_translations, build_msq_question, get_translations_weak_knowledge, \
-    get_translations_strong_knowledge
+from test_system.builder.question import get_new_word_translations, build_msq_question, get_word_translations_weak_knowledge, \
+    get_word_translations_strong_knowledge, get_new_sentence_translations
 from test_system.words import TranslationKnowledgeSaver, TranslationQuestion
+import test_system.sentences as sentences
 
 
 class TestBuilder:
@@ -16,7 +17,7 @@ class TestBuilder:
         self.__user = user
 
     def add_new_words(self, number: int = 10) -> None:
-        translations = get_new_translations(number)
+        translations = get_new_word_translations(number)
         for translation in translations:
             if randint(0, 1) == 0:
                 question = build_msq_question(translation)
@@ -26,7 +27,7 @@ class TestBuilder:
             self.__questions.append(question)
 
     def add_weak_knowledge_words(self, number: int = 10) -> None:
-        translations = get_translations_weak_knowledge(number)
+        translations = get_word_translations_weak_knowledge(number)
         for translation in translations:
             if randint(0, 1) == 0:
                 question = build_msq_question(translation)
@@ -36,13 +37,23 @@ class TestBuilder:
             self.__questions.append(question)
 
     def add_strong_knowledge_words(self, number: int = 10) -> None:
-        translations = get_translations_strong_knowledge(number)
+        translations = get_word_translations_strong_knowledge(number)
         for translation in translations:
             if randint(0, 1) == 0:
                 question = build_msq_question(translation)
             else:
                 question = TranslationQuestion(translation)
             question = QuestionProxy(question, TranslationKnowledgeSaver(self.__user, translation))
+            self.__questions.append(question)
+
+    def add_new_sentences(self, number: int = 10) -> None:
+        translations = get_new_sentence_translations(number)
+        for translation in translations:
+            if randint(0, 1) == 0:
+                question = sentences.ReorderTranslationQuestion(translation)
+            else:
+                question = sentences.TranslationQuestion(translation)
+            question = QuestionProxy(question, sentences.TranslationKnowledgeSaver(self.__user, translation))
             self.__questions.append(question)
 
     def build(self, caching_class: Type[CachingInterface] | None = None) -> Test:

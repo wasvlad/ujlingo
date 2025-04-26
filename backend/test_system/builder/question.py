@@ -1,11 +1,12 @@
 from random import randint
-from typing import List
+from typing import List, Type
 
 from sqlalchemy import func
 
 from database import get_db
-from database.models import User, WordTranslation, WordTranslationKnowledge, Word
-from ..words import TranslationQuestion, MSQQuestion
+from database.models import (WordTranslation, WordTranslationKnowledge, Word, Sentence, SentenceTranslation,
+                             SentenceTranslationKnowledge)
+from ..words import MSQQuestion
 
 
 def build_msq_question(translation: WordTranslation) -> MSQQuestion:
@@ -44,14 +45,13 @@ def build_msq_question(translation: WordTranslation) -> MSQQuestion:
     question = MSQQuestion(translation, options)
     return question
 
-
-def get_new_translations(number: int = 10, max_knowledge: int = 10) -> List[WordTranslation]:
+def get_new_word_translations(number: int = 10, max_knowledge: int = 10) -> List[WordTranslation]:
     db = next(get_db())
     translations = []
 
     translations_db = db.query(WordTranslation, WordTranslationKnowledge) \
         .join(WordTranslationKnowledge, WordTranslationKnowledge.word_translation_id == WordTranslation.id, isouter=True) \
-        .filter((WordTranslationKnowledge.knowledge <= max_knowledge) | (WordTranslationKnowledge.id == None)) \
+        .filter((WordTranslationKnowledge.knowledge <= max_knowledge) | (WordTranslationKnowledge.id.is_(None))) \
         .order_by(func.random()) \
         .limit(number).all()
 
@@ -64,7 +64,7 @@ def get_new_translations(number: int = 10, max_knowledge: int = 10) -> List[Word
 
     return translations
 
-def get_translations_weak_knowledge(number: int = 10, min_knowledge: int = 10, max_knowledge: int = 70) -> List[WordTranslation]:
+def get_word_translations_weak_knowledge(number: int = 10, min_knowledge: int = 10, max_knowledge: int = 70) -> List[WordTranslation]:
     db = next(get_db())
     translations = []
 
@@ -84,7 +84,7 @@ def get_translations_weak_knowledge(number: int = 10, min_knowledge: int = 10, m
     return translations
 
 
-def get_translations_strong_knowledge(number: int = 10, min_knowledge: int = 70) -> List[WordTranslation]:
+def get_word_translations_strong_knowledge(number: int = 10, min_knowledge: int = 70) -> List[WordTranslation]:
     db = next(get_db())
     translations = []
 
@@ -98,6 +98,25 @@ def get_translations_strong_knowledge(number: int = 10, min_knowledge: int = 70)
         db.refresh(translation)
         db.refresh(translation.word_original)
         db.refresh(translation.word_translated)
+        db.expunge(translation)
+        translations.append(translation)
+
+    return translations
+
+def get_new_sentence_translations(number: int = 10, max_knowledge: int = 10) -> List[SentenceTranslation]:
+    db = next(get_db())
+    translations = []
+
+    translations_db = db.query(SentenceTranslation, SentenceTranslationKnowledge) \
+        .join(SentenceTranslationKnowledge, SentenceTranslationKnowledge.sentence_translation_id == SentenceTranslation.id, isouter=True) \
+        .filter((SentenceTranslationKnowledge.knowledge <= max_knowledge) | (SentenceTranslationKnowledge.id.is_(None))) \
+        .order_by(func.random()) \
+        .limit(number).all()
+
+    for translation, knowledge in translations_db:
+        db.refresh(translation)
+        db.refresh(translation.sentence_original)
+        db.refresh(translation.sentence_translated)
         db.expunge(translation)
         translations.append(translation)
 
