@@ -188,7 +188,7 @@ class TestGetStrongKnowledgeWords:
         self.db.commit()
         strong_words = get_word_translations_strong_knowledge(1)
         assert len(strong_words) == 1
-        assert strong_words[0].id == self.word_translation.id or strong_words[0].id == self.word_translation2.id
+        assert strong_words[0].id in [self.word_translation.id, self.word_translation2.id]
 
     def test_small_min(self):
         strong_words = get_word_translations_strong_knowledge(2, min_knowledge=40)
@@ -234,6 +234,7 @@ class TestGetNewSentences:
         assert len(new_sentences) == 2
         assert new_sentences[0].id == self.sentence_translation.id or new_sentences[0].id == self.sentence_translation2.id
         assert new_sentences[1].id == self.sentence_translation.id or new_sentences[1].id == self.sentence_translation2.id
+        # translations should be different
         assert new_sentences[0].id != new_sentences[1].id
 
     def test_small_knowledge(self):
