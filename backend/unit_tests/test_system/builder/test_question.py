@@ -255,4 +255,4 @@ class TestGetNewSentences:
         self.db.commit()
         new_sentences = get_new_sentence_translations(1, 30)
         assert len(new_sentences) == 1
-        assert new_sentences[0].id == self.sentence_translation.id or new_sentences[0].id == self.sentence_translation2.id
+        assert new_sentences[0].id in [self.sentence_translation.id, self.sentence_translation2.id]
