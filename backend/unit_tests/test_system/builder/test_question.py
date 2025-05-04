@@ -269,7 +269,7 @@ class TestGetWeakKnowledgeSentences:
         self.sentence_ua = "привіт світ"
         self.sentence_ua2 = "хей світ"
         self.sentence_en_db = Sentence(sentence=self.sentence_en, language="en")
-        self.sentence_ua2_db = Sentence(sentence=self.sentence_ua2, language="en")
+        self.sentence_ua2_db = Sentence(sentence=self.sentence_ua2, language="ua")
         self.sentence_ua_db = Sentence(sentence=self.sentence_ua, language="ua")
         self.db.add_all([self.sentence_en_db, self.sentence_ua_db, self.sentence_ua2_db])
         self.db.commit()
