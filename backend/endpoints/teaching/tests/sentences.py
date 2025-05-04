@@ -20,3 +20,16 @@ async def init_test_new_sentences(user: User = Depends(validate_session)):
     except CachingException:
         raise HTTPException(status_code=400, detail="Test session is already initialized")
     return MessageResponse(message="Test session initialized")
+
+@router.post("/weak-knowledge", response_model=MessageResponse, responses={
+    400: {"model": ErrorResponse, "description": "Bad Request: Test session is already initialized"}
+})
+async def init_test_weak_sentences(user: User = Depends(validate_session)):
+    """Initialize a test session with sentences with weak knowledge."""
+    try:
+        builder = TestBuilder(user)
+        builder.add_weak_sentences()
+        builder.build(caching_class=RedisCaching)
+    except CachingException:
+        raise HTTPException(status_code=400, detail="Test session is already initialized")
+    return MessageResponse(message="Test session initialized")

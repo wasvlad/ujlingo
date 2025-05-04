@@ -214,7 +214,7 @@ class TestGetNewSentences:
         self.db.commit()
         self.sentence_en = "hello world"
         self.sentence_ua = "привіт світ"
-        self.sentence_ua2 = "хей свіхт"
+        self.sentence_ua2 = "хей світ"
         self.sentence_en_db = Sentence(sentence=self.sentence_en, language="en")
         self.sentence_ua2_db = Sentence(sentence=self.sentence_ua2, language="en")
         self.sentence_ua_db = Sentence(sentence=self.sentence_ua, language="ua")
@@ -256,3 +256,42 @@ class TestGetNewSentences:
         new_sentences = get_new_sentence_translations(1, 30)
         assert len(new_sentences) == 1
         assert new_sentences[0].id in [self.sentence_translation.id, self.sentence_translation2.id]
+
+class TestGetWeakKnowledgeSentences:
+    def setup_method(self):
+        clear_database()
+        self.user = User(email="test@example.com", name="Test", surname="User", password_hash="<PASSWORD>")
+        self.user.is_confirmed = True
+        self.db = next(get_db())
+        self.db.add(self.user)
+        self.db.commit()
+        self.sentence_en = "hello world"
+        self.sentence_ua = "привіт світ"
+        self.sentence_ua2 = "хей світ"
+        self.sentence_en_db = Sentence(sentence=self.sentence_en, language="en")
+        self.sentence_ua2_db = Sentence(sentence=self.sentence_ua2, language="en")
+        self.sentence_ua_db = Sentence(sentence=self.sentence_ua, language="ua")
+        self.db.add_all([self.sentence_en_db, self.sentence_ua_db, self.sentence_ua2_db])
+        self.db.commit()
+        self.sentence_translation = SentenceTranslation(sentence_translated_id=self.sentence_en_db.id,
+                                                        sentence_original_id=self.sentence_ua_db.id)
+        self.sentence_translation2 = SentenceTranslation(sentence_translated_id=self.sentence_en_db.id,
+                                                         sentence_original_id=self.sentence_ua2_db.id)
+        self.db.add_all([self.sentence_translation, self.sentence_translation2])
+        self.db.commit()
+        self.knowledge1 = SentenceTranslationKnowledge(user_id=self.user.id, sentence_translation_id=self.sentence_translation.id, knowledge=30)
+        self.db.add(self.knowledge1)
+        self.db.commit()
+
+    def test_ok(self):
+        weak_sentences = get_sentence_translations_weak_knowledge(2)
+        assert len(weak_sentences) == 1
+        assert weak_sentences[0].id == self.sentence_translation.id
+
+    def test_big_min(self):
+        new_sentences = get_sentence_translations_weak_knowledge(2, min_knowledge=40)
+        assert len(new_sentences) == 0
+
+    def test_small_max(self):
+        new_sentences = get_sentence_translations_weak_knowledge(2, max_knowledge=20)
+        assert len(new_sentences) == 0
