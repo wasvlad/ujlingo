@@ -140,3 +140,22 @@ def get_sentence_translations_weak_knowledge(number: int = 10, min_knowledge: in
         translations.append(translation)
 
     return translations
+
+def get_sentence_translations_strong_knowledge(number: int = 10, min_knowledge: int = 70) -> List[SentenceTranslation]:
+    db = next(get_db())
+    translations = []
+
+    translations_db = db.query(SentenceTranslation, SentenceTranslationKnowledge) \
+        .join(SentenceTranslationKnowledge, SentenceTranslationKnowledge.sentence_translation_id == SentenceTranslation.id, isouter=True) \
+        .filter(SentenceTranslationKnowledge.knowledge >= min_knowledge) \
+        .order_by(func.random()) \
+        .limit(number).all()
+
+    for translation, knowledge in translations_db:
+        db.refresh(translation)
+        db.refresh(translation.sentence_original)
+        db.refresh(translation.sentence_translated)
+        db.expunge(translation)
+        translations.append(translation)
+
+    return translations
