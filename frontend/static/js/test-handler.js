@@ -1,71 +1,123 @@
 async function loadQuestion() {
+  const qText     = document.getElementById("question-text");
+  const formGroup = document.querySelector(".form-group");
+  const submitBtn = document.getElementById("submit-answer-btn");
+  const finishBtn = document.getElementById("test-finished-btn");
+
   try {
-    const res = await fetch("/api/teaching/test/get_question", {
-      method: "GET",
-      credentials: "include"
+    const res  = await fetch("/api/teaching/get_question", {
+      method: "GET", credentials: "include"
+    });
+    const data = await res.json();
+    console.log("GET /get_question →", res.status, data);
+
+    if (!res.ok || data.message === "Test is finished") {
+      qText.textContent       = data.message || "Test is finished";
+      formGroup.style.display = "none";
+      submitBtn.style.display = "none";
+      finishBtn.style.display = "block";
+      return;
+    }
+
+    qText.textContent       = data.question;
+    formGroup.innerHTML     = "";
+    formGroup.style.display = "";
+    submitBtn.style.display = "";
+
+    const showSel = document.getElementById("selected-container");
+    if (showSel) showSel.remove();
+
+    // type 0:
+    if (data.type === 0) {
+      formGroup.innerHTML = `
+        <input type="text" id="answer-input" name="answer"
+               placeholder="Enter your answer" required>
+      `;
+      return;
+    }
+
+    // type 1 i type 2:
+    const items = data.type === 1 ? data.options : data.tokens;
+    formGroup.innerHTML = `
+      <div id="tokens-container" class="tokens"></div>
+      <div id="selected-container" class="selected-tokens"></div>
+      <input type="hidden" id="answer-input" name="answer" required>
+    `;
+    const container   = document.getElementById("tokens-container");
+    const selectedDiv = document.getElementById("selected-container");
+    const answerInput = document.getElementById("answer-input");
+    let selected      = data.type === 1 ? null : [];
+
+    items.forEach(token => {
+      const btn = document.createElement("button");
+      btn.type        = "button";
+      btn.className   = "token-btn";
+      btn.textContent = token;
+
+      btn.addEventListener("click", () => {
+        if (data.type === 1) {
+          selected = token;
+          answerInput.value = token;
+          container.querySelectorAll("button")
+            .forEach(b => b.disabled = b !== btn);
+          selectedDiv.textContent = `Chosen: ${token}`;
+        } else {
+          selected.push(token);
+          answerInput.value = selected.join(" ");
+          btn.disabled = true;
+          selectedDiv.textContent = `Built sentence: ${selected.join(" ")}`;
+        }
+      });
+
+      container.appendChild(btn);
     });
 
-    const data = await res.json();
-    const questionEl = document.getElementById("question-container");
-
-    console.log(data);
-    if (res.ok) {
-      if (data.message === "Test is finished") {
-        questionEl.textContent = data.message;
-
-        document.getElementById("answer-input").style.display = "none";
-        document.getElementById("submit-answer-btn").style.display = "none";
-        document.getElementById("test-finished-btn").style.display = "block";
-} else {
-        questionEl.textContent = data.question || "Question loaded";
-      }
-    } else {
-      questionEl.textContent = data.question || "Failed to load question";
-      document.getElementById("answer-input").style.display = "none";
-      document.getElementById("submit-answer-btn").style.display = "none";
-      document.getElementById("test-finished-btn").style.display = "block";
-    }
   } catch (err) {
     console.error("Load question error:", err);
+    qText.textContent = "Error loading question";
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   loadQuestion();
 
-  document.getElementById("submit-answer-btn").addEventListener("click", async () => {
-    const answer = document.getElementById("answer-input").value.trim();
-    const message = document.getElementById("result-message");
+  document.getElementById("answer-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const messageEl = document.getElementById("response-message");
+    const rawAnswer = document.getElementById("answer-input").value.trim();
 
-    if (!answer) {
-      message.textContent = "Please enter an answer.";
-      message.style.color = "red";
+    if (!rawAnswer) {
+      messageEl.textContent = "Please enter an answer.";
+      messageEl.style.color = "red";
       return;
     }
 
     try {
-      const res = await fetch("/api/teaching/test/answer_question", {
-        method: "POST",
-        credentials: "include",
+      const res    = await fetch("/api/teaching/answer_question", {
+        method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answer })
+        body: JSON.stringify({ answer: rawAnswer })
       });
-
       const result = await res.json();
+      console.log("POST /answer_question →", res.status, result);
 
       if (res.ok) {
-        message.textContent = `Correct: ${result.correct}`;
-        message.style.color = result.correct ? "green" : "red";
-        loadQuestion();
-        document.getElementById("answer-input").value = "";
+        if (result.is_correct) {
+          messageEl.textContent = "Correct!";
+          messageEl.style.color = "green";
+        } else {
+          messageEl.textContent = `Incorrect. Correct answer: ${result.correct_answer}`;
+          messageEl.style.color = "red";
+        }
+        await loadQuestion();
       } else {
-        message.textContent = result.detail || "Failed to submit answer";
-        message.style.color = "red";
+        messageEl.textContent = result.detail || "Failed to submit answer";
+        messageEl.style.color = "red";
       }
     } catch (err) {
-      console.error("Submit answer error:", err);
-      message.textContent = "Error submitting answer.";
-      message.style.color = "red";
+      console.error("Submit error:", err);
+      messageEl.textContent = "Error submitting answer.";
+      messageEl.style.color = "red";
     }
   });
 });
