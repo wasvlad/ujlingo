@@ -37,7 +37,7 @@ async def init_test_weak_sentences(user: User = Depends(validate_session)):
 @router.post("/strong-knowledge", response_model=MessageResponse, responses={
     400: {"model": ErrorResponse, "description": "Bad Request: Test session is already initialized"}
 })
-async def init_test_weak_sentences(user: User = Depends(validate_session)):
+async def init_test_strong_sentences(user: User = Depends(validate_session)):
     """Initialize a test session with sentences with strong knowledge."""
     try:
         builder = TestBuilder(user)
