@@ -40,7 +40,7 @@ def build_msq_question(translation: WordTranslation) -> MSQQuestion:
     word = str(right_word)
     word = change_word(word)
     if word != right_word:
-        options.append(right_word)
+        options.append(word)
 
     question = MSQQuestion(translation, options)
     return question
