@@ -17,32 +17,33 @@ let initialized = false;
 
 async function doInit() {
   if (initialized) return;
-
   const key = getTestKey();
   const endpoint = INIT_ENDPOINTS[key];
-  if (!endpoint) {
-    throw new Error("Nieznany test: " + key);
-  }
+  if (!endpoint) throw new Error("Unknown test: " + key);
 
   console.log("➤ Initializing test of type:", key, "via", endpoint);
-  try {
-    const resp = await fetch(endpoint, {
-      method: "POST",
-      credentials: "include"
-    });
-    const data = await resp.json();
-    console.log("Init response:", resp.status, data);
+  const resp = await fetch(endpoint, {
+    method: "POST",
+    credentials: "include"
+  });
+  const data = await resp.json();
+  console.log("Init response:", resp.status, data);
 
-    if (resp.ok || data.detail === "Test session is already initialized") {
-      initialized = true;
-      return;
-    } else {
-      throw new Error(data.detail || `Init failed (status ${resp.status})`);
-    }
-  } catch (e) {
-    console.error("Init error:", e);
-    throw e;
+  if (resp.ok || data.detail === "Test session is already initialized") {
+    initialized = true;
+    return;
+  } else {
+    throw new Error(data.detail || `Init failed (status ${resp.status})`);
   }
+}
+
+function buildSentence(tokens) {
+  return tokens.reduce((sentence, token, i) => {
+    if (i === 0) return token;
+    return /^[.,!?;:]$/.test(token)
+      ? sentence + token
+      : sentence + " " + token;
+  }, "");
 }
 
 async function loadQuestion() {
@@ -53,7 +54,6 @@ async function loadQuestion() {
 
   try {
     await doInit();
-
     const res = await fetch("/api/teaching/get_question", {
       method: "GET",
       credentials: "include"
@@ -94,32 +94,54 @@ async function loadQuestion() {
     const container   = document.getElementById("tokens-container");
     const selectedDiv = document.getElementById("selected-container");
     const answerInput = document.getElementById("answer-input");
-    let selected = data.type === 1 ? null : [];
 
-    items.forEach(token => {
-      const btn = document.createElement("button");
-      btn.type        = "button";
-      btn.className   = "token-btn";
-      btn.textContent = token;
+    if (data.type === 1) {
+      items.forEach(token => {
+        const btn = document.createElement("button");
+        btn.type        = "button";
+        btn.className   = "token-btn";
+        btn.textContent = token;
 
-      btn.addEventListener("click", () => {
-        if (data.type === 1) {
-          selected = token;
+        btn.addEventListener("click", () => {
+          const prev = container.querySelector(".token-btn.selected");
+          if (prev && prev !== btn) {
+            prev.classList.remove("selected");
+          }
+          btn.classList.add("selected");
           answerInput.value = token;
-          container.querySelectorAll("button").forEach(b => {
-            if (b !== btn) b.disabled = true;
-          });
           selectedDiv.textContent = `Chosen: ${token}`;
-        } else {
-          selected.push(token);
-          answerInput.value = selected.join(" ");
-          btn.disabled = true;
-          selectedDiv.textContent = `Built sentence: ${selected.join(" ")}`;
-        }
-      });
+        });
 
-      container.appendChild(btn);
-    });
+        container.appendChild(btn);
+      });
+    } else {
+      let selectedTokens = [];
+
+      items.forEach(token => {
+        const btn = document.createElement("button");
+        btn.type        = "button";
+        btn.className   = "token-btn";
+        btn.textContent = token;
+
+        btn.addEventListener("click", () => {
+          const idx = selectedTokens.indexOf(token);
+          if (idx === -1) {
+            selectedTokens.push(token);
+            btn.classList.add("selected");
+          } else {
+            selectedTokens.splice(idx, 1);
+            btn.classList.remove("selected");
+          }
+          const sentence = buildSentence(selectedTokens);
+          answerInput.value = sentence;
+          selectedDiv.textContent = sentence
+            ? `Built sentence: ${sentence}`
+            : "";
+        });
+
+        container.appendChild(btn);
+      });
+    }
 
   } catch (err) {
     console.error("Load question error:", err);
