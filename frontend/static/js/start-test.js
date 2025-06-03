@@ -16,40 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.disabled = !select.value;
   });
 
-  btn.addEventListener("click", async () => {
-    const key      = select.value;
-    const initUrl  = ENDPOINTS[key];
-    if (!initUrl) return;
-
-    try {
-      await fetch("/api/teaching/end_test", {
-        method: "POST", credentials: "include"
-      });
-
-      const initRes = await fetch(initUrl, {
-        method: "POST", credentials: "include"
-      });
-      const initData = await initRes.json();
-      console.log("Init response:", initRes.status, initData);
-      if (!initRes.ok && initData.detail !== "Test session is already initialized") {
-        alert("Error initializing test: " + (initData.detail||initRes.status));
-        return;
-      }
-
-      await new Promise(r => setTimeout(r, 300));
-      const checkRes = await fetch("/api/teaching/get_question", {
-        method: "GET", credentials: "include"
-      });
-      const checkData = await checkRes.json();
-      console.log("First question check:", checkRes.status, checkData);
-      if (!checkRes.ok) {
-        alert("Didn't manage to download test: " + (checkData.detail||checkRes.status));
-        return;
-      }
-
-      window.location.href = `/html/test.html?test=${encodeURIComponent(key)}`;
-    } catch (err) {
-      console.error("Start test error:", err);
-    }
+  btn.addEventListener("click", () => {
+    const key = select.value;
+    if (!key) return;
+    window.location.href = `/html/test.html?test=${encodeURIComponent(key)}`;
   });
 });
