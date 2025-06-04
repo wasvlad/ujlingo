@@ -1,20 +1,16 @@
-# Use an official Python runtime as the base image.
-FROM python:3.13-alpine
+FROM python:3.10-slim
 
-# Set the working directory.
-WORKDIR /translator
+WORKDIR /app
 
-# Copy the requirements file and install dependencies.
 COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code.
+COPY data data
 COPY main.py main.py
-COPY data/production data/production
 
-# Expose the port that the app runs on.
-EXPOSE 3000
+ENV MODEL_PATH=/app/data/uk_en_translation_model
 
-# Run the application.
+EXPOSE 3002
+
 CMD ["python", "main.py"]

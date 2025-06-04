@@ -1,3 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
+transformers
+torch
 pandas
+python-multipart
+sentencepiece
