@@ -13,11 +13,21 @@ function getTestKey() {
   return params.get("test");
 }
 
+function humanizeKey(key) {
+  return key.replace(/-/g, " ");
+}
+
 let initialized = false;
 
 async function doInit() {
   if (initialized) return;
-  const key = getTestKey();
+  const key       = getTestKey();
+  const storedKey = localStorage.getItem("currentTestKey");
+
+  if (storedKey && storedKey !== key) {
+    throw new Error("Already running");
+  }
+
   const endpoint = INIT_ENDPOINTS[key];
   if (!endpoint) throw new Error("Unknown test: " + key);
 
@@ -29,12 +39,26 @@ async function doInit() {
   const data = await resp.json();
   console.log("Init response:", resp.status, data);
 
-  if (resp.ok || data.detail === "Test session is already initialized") {
+  if (resp.ok) {
     initialized = true;
+    localStorage.setItem("currentTestKey", key);
     return;
-  } else {
-    throw new Error(data.detail || `Init failed (status ${resp.status})`);
   }
+
+  if (data.detail === "Test session is already initialized") {
+    if (storedKey === key) {
+      initialized = true;
+      return;
+    } else {
+      throw new Error("Already running");
+    }
+  }
+
+  if (data.detail === "No questions") {
+    throw new Error("No questions");
+  }
+
+  throw new Error(data.detail || `Init failed (status ${resp.status})`);
 }
 
 function buildSentence(tokens) {
@@ -54,6 +78,27 @@ async function loadQuestion() {
 
   try {
     await doInit();
+  } catch (initErr) {
+    const storedKey = localStorage.getItem("currentTestKey");
+    if (initErr.message === "No questions") {
+      const key        = getTestKey();
+      const [prefix, suffix] = key.split("-");
+      qText.textContent = `Before going to ${prefix} ${suffix} you should try new ${suffix}.`;
+    } else if (initErr.message === "Already running") {
+      const activeKey  = storedKey || getTestKey();
+      const humanActive = humanizeKey(activeKey);
+      qText.textContent = `You should complete ${humanActive} test before starting another.`;
+    } else {
+      console.error("Init error:", initErr);
+      qText.textContent = "Error initializing test";
+    }
+    formGroup.style.display = "none";
+    submitBtn.style.display = "none";
+    finishBtn.style.display = "block";
+    return;
+  }
+
+  try {
     const res = await fetch("/api/teaching/get_question", {
       method: "GET",
       credentials: "include"
@@ -62,10 +107,11 @@ async function loadQuestion() {
     console.log("GET /get_question →", res.status, data);
 
     if (!res.ok || data.message === "Test is finished") {
-      qText.textContent       = data.message || "Test is finished";
+      qText.textContent = data.message || "Test is finished";
       formGroup.style.display = "none";
       submitBtn.style.display = "none";
       finishBtn.style.display = "block";
+      localStorage.removeItem("currentTestKey");
       return;
     }
 
@@ -146,6 +192,9 @@ async function loadQuestion() {
   } catch (err) {
     console.error("Load question error:", err);
     qText.textContent = "Error loading question";
+    formGroup.style.display = "none";
+    submitBtn.style.display = "none";
+    finishBtn.style.display = "none";
   }
 }
 
@@ -155,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("answer-form").addEventListener("submit", async e => {
     e.preventDefault();
     const messageEl = document.getElementById("response-message");
-    const rawAnswer = document.getElementById("answer-input").value.trim();
+    const rawAnswer = document.getElementById("answer-input")?.value.trim();
 
     if (!rawAnswer) {
       messageEl.textContent = "Please enter an answer.";
