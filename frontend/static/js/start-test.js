@@ -1,24 +1,30 @@
-const ENDPOINTS = {
-  "random-words":     "/api/teaching/random/words/init_test",
-  "new-words":        "/api/teaching/tests/words/new",
-  "weak-words":       "/api/teaching/tests/words/weak-knowledge",
-  "strong-words":     "/api/teaching/tests/words/strong-knowledge",
-  "new-sentences":    "/api/teaching/tests/sentences/new",
-  "weak-sentences":   "/api/teaching/tests/sentences/weak-knowledge",
-  "strong-sentences": "/api/teaching/tests/sentences/strong-knowledge"
-};
-
 document.addEventListener("DOMContentLoaded", () => {
-  const select = document.getElementById("test-select");
-  const btn    = document.getElementById("start-test-btn");
+  const startBtn = document.getElementById("start-test-btn");
 
-  select.addEventListener("change", () => {
-    btn.disabled = !select.value;
-  });
+  if (!startBtn) return;
 
-  btn.addEventListener("click", () => {
-    const key = select.value;
-    if (!key) return;
-    window.location.href = `/html/test.html?test=${encodeURIComponent(key)}`;
+  startBtn.addEventListener("click", async () => {
+    try {
+      const response = await fetch("/api/teaching/random/words/init_test", {
+        method: "POST",
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        window.location.href = "/html/test.html";
+      } else {
+        const result = await response.json();
+        if (
+          result.detail &&
+          result.detail === "Test session is already initialized"
+        ) {
+          window.location.href = "/html/test.html";
+        } else {
+          alert(result.detail || "Error initializing test");
+        }
+      }
+    } catch (err) {
+      console.error("Init test error:", err);
+    }
   });
 });

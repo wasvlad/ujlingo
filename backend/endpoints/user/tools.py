@@ -27,7 +27,9 @@ def is_strong_password(password: str) -> bool:
 
 def generate_token(email: str,
                          secret_key: str,
-                         expiration_date: datetime = datetime.now(timezone.utc) + timedelta(minutes=5)) -> str:
+                         expiration_date: datetime | None = None) -> str:
+    if expiration_date is None:
+        expiration_date = datetime.now(timezone.utc) + timedelta(minutes=5)
     token = jwt.encode({"email": email, "exp": expiration_date},
                           secret_key, algorithm="HS256")
     return token
