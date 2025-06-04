@@ -81,15 +81,57 @@ h2 {
   margin-bottom: 12px;
 }
 .token-btn {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.13);
   border: 1px solid #666;
   border-radius: 4px;
   padding: 6px 10px;
+  color: #000000;
 }
 .token-btn:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: #004B93;
 }
 .token-btn:disabled {
   opacity: 0.5;
   cursor: default;
+}
+.test-select-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 40px auto 0;
+}
+
+.test-select-group label {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+#test-select {
+  flex: 1;
+  background-color: rgba(255, 255, 255, 0.13);
+  color: #004B93;
+  border: 1px solid #004B93;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.1s;
+}
+
+#test-select:focus {
+  outline: none;
+}
+
+#response-message {
+  position: relative;
+  z-index: 1000;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  min-height: 1.2em;
+  color: #e63946;
+  transition: color 0.2s;
 }
