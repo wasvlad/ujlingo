@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Script to train a Transformer-based seq2seq model from scratch on Ukrainian-English data.
 Uses Hugging Face Transformers with a custom config (BART).
@@ -29,30 +28,25 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
 
-    # Paths
     tokenizer_path = os.path.join(project_root, "data", "tokenizer", "tokenizer.json")
     splits_dir = os.path.join(project_root, "data", "splits10k")
     output_dir = os.path.join(project_root, "checkpoints", "scratch")
     os.makedirs(output_dir, exist_ok=True)
 
-    # Check tokenizer exists
     if not os.path.isfile(tokenizer_path):
         raise FileNotFoundError(f"Tokenizer JSON not found at {tokenizer_path}")
 
-    # Load tokenizer
     tokenizer = PreTrainedTokenizerFast(
         tokenizer_file=tokenizer_path,
         bos_token="<s>", eos_token="</s>", pad_token="<pad>"
     )
 
-    # Load dataset splits10k
     data_files = {
         "train": os.path.join(splits_dir, "train.csv"),
         "validation": os.path.join(splits_dir, "validation.csv")
     }
     raw_datasets = load_dataset("csv", data_files=data_files)
 
-    # Tokenization function
     def tokenize_fn(examples):
         inputs = examples["Ukrainian"]
         targets = examples["English"]
@@ -67,7 +61,6 @@ def main():
         remove_columns=["Ukrainian", "English"]
     )
 
-    # Model config and init
     config = BartConfig(
         vocab_size=tokenizer.vocab_size,
         d_model=512,
@@ -129,7 +122,6 @@ def main():
         compute_metrics=compute_metrics
     )
 
-    # Train and save
     trainer.train()
     trainer.save_model(os.path.join(output_dir, "final"))
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import torch
 from datasets import load_dataset
@@ -36,7 +35,6 @@ def main():
 
     ds = load_dataset("csv", data_files={"test": test_path})["test"]
 
-    # Функція для генерації без token_type_ids
     def generate_batch(batch):
         enc = tokenizer(
             batch["Ukrainian"],
@@ -54,10 +52,8 @@ def main():
         )
         return {"pred": tokenizer.batch_decode(outputs, skip_special_tokens=True)}
 
-    # Генеруємо переклади батчами
     results = ds.map(generate_batch, batched=True, batch_size=16)
 
-    # Обчислюємо BLEU
     bleu = evaluate.load("sacrebleu")
     references = [[r] for r in results["English"]]
     score = bleu.compute(predictions=results["pred"], references=references)

@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 
-# Отримуємо директорію скрипта, щоб будувати відносні шляхи до data/production
 script_dir = os.path.dirname(os.path.abspath(__file__))
 data_folder = os.path.normpath(os.path.join(script_dir, "..", "data", "production"))
 
@@ -29,30 +28,24 @@ def load_and_normalize(path):
     df = df.rename(columns={col0: "English", col1: "Ukrainian"})
     return df[["English", "Ukrainian"]].copy()
 
-# Завантажуємо всі три файли
 df1 = load_and_normalize(file1)
 df2 = load_and_normalize(file2)
 df3 = load_and_normalize(file3)
 
-# Об’єднуємо їх у один DataFrame
 merged = pd.concat([df1, df2, df3], ignore_index=True)
 
-# Видаляємо дублікати за парами "English" + "Ukrainian"
 before = len(merged)
 merged = merged.drop_duplicates(subset=["English", "Ukrainian"])
 after = len(merged)
 
-# Виводимо кількість рядків до та після видалення дублікатів
 print(f"Загалом рядків до drop_duplicates(): {before}")
 print(f"Після видалення дублікатів:             {after}")
 print()
 
-# Виводимо перші 20 рядків у форматі табличних даних
 pd.set_option("display.max_rows", 20)
 pd.set_option("display.max_columns", 2)
 print(merged.head(20))
 
-# Зберігаємо фінальний результат у TSV-файл
 output_path = os.path.join(data_folder, "merged_ukr_dataset_no_duplicates.tsv")
 merged.to_csv(output_path, sep="\t", index=False, encoding="utf-8")
 print()

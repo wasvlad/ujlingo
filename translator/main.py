@@ -1,120 +1,308 @@
-#!/usr/bin/env python3
 import os
 import csv
 import torch
 import pandas as pd
-
 from pathlib import Path
 from functools import lru_cache
-
-from fastapi import FastAPI, HTTPException, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Form
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-app = FastAPI(title="Translator + Sync API", version="1.0")
+app = FastAPI(title="UA→EN Translator API", version="1.0")
 
-# ─── 1. Шлях до моделі ──────────────────────────────────────────────────────────
-default_dir = Path(__file__).parent / "data" / "uk_en_translation_model"
+default_dir = Path(__file__).parent / "data" / "marian_finetuned_uk_en_v1"
 MODEL_PATH = os.getenv("MODEL_PATH", str(default_dir))
 
 if not Path(MODEL_PATH).exists():
     raise FileNotFoundError(
         f"MODEL_PATH '{MODEL_PATH}' does not exist.\n"
-        "• локально:   export MODEL_PATH=data/uk_en_translation_model\n"
-        "• у Docker:   ENV MODEL_PATH=/app/data/uk_en_translation_model"
+        "• локально:   export MODEL_PATH=data/marian_finetuned_uk_en_v1\n"
+        "• у Docker:   ENV MODEL_PATH=/app/data/marian_finetuned_uk_en_v1"
     )
 
-# ─── 2. Завантаження моделі (тільки локально, без звернень до HuggingFace Hub) ────
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, local_files_only=True)
 model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_PATH, local_files_only=True).to(device)
 
-
-# ─── 3. Pydantic-схема для JSON-запиту /translate ───────────────────────────────
 class TranslationRequest(BaseModel):
     text: str
 
-
-# ─── 4. GET / → редірект на /translate ────────────────────────────────────────
-@app.get("/", response_class=RedirectResponse)
-async def read_root():
-    return RedirectResponse(url="/translate")
-
-
-# ─── 5. GET /translate: повертає HTML-форму для введення речення ───────────────
 @app.get("/translate", response_class=HTMLResponse)
-async def translate_form_page():
+async def get_translate():
     return """
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>UA→EN Translator</title>
+        <title>Ukrainian→English Translator</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+          }
+          header {
+            background-color: #3e4c59;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            color: #ffffff;
+          }
+          .container {
+            max-width: 700px;
+            width: 100%;
+            padding: 20px;
+            margin-top: 40px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+          }
+          h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333333;
+          }
+          textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccd0d5;
+            border-radius: 4px;
+            resize: vertical;
+          }
+          button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3e4c59;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          }
+          button:hover {
+            background-color: #2c3742;
+          }
+          .message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #d9534f;
+          }
+          .result {
+            margin-top: 20px;
+          }
+          .result p {
+            font-size: 16px;
+            color: #222222;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+          }
+        </style>
       </head>
       <body>
-        <h1>Українсько-Англійський Переклад</h1>
-        <form action="/translate-form" method="post">
-          <textarea 
-            name="text"
-            rows="4" 
-            cols="60" 
-            placeholder="Введіть українське речення…"
-          ></textarea><br><br>
-          <button type="submit">Перекласти</button>
-        </form>
+        <header>
+          <h1>Ukrainian→English Translator</h1>
+        </header>
+        <div class="container">
+          <h1>Enter your Ukrainian sentence below</h1>
+          <form action="/translate" method="post">
+            <textarea name="text" placeholder="Enter a Ukrainian sentence…"></textarea><br>
+            <button type="submit">Translate</button>
+          </form>
+        </div>
       </body>
     </html>
     """
 
-
-# ─── 6. POST /translate-form: обробка форми та повернення HTML ────────────────
-@app.post("/translate-form", response_class=HTMLResponse)
-async def translate_form(text: str = Form(...)):
+@app.post("/translate", response_class=HTMLResponse)
+async def post_translate(text: str = Form(...)):
     if not text.strip():
-        return HTMLResponse(
-            content="<h3 style='color:red;'>Помилка: порожній рядок.</h3>"
-                    "<a href='/translate'>← Назад</a>",
-            status_code=400
-        )
+        return """
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>Ukrainian→English Translator</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background-color: #f5f7fa;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                min-height: 100vh;
+              }
+              header {
+                background-color: #3e4c59;
+                width: 100%;
+                padding: 20px 0;
+                text-align: center;
+                color: #ffffff;
+              }
+              .container {
+                max-width: 700px;
+                width: 100%;
+                padding: 20px;
+                margin-top: 40px;
+                background-color: #ffffff;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                border-radius: 8px;
+              }
+              h1 {
+                margin-bottom: 20px;
+                font-size: 24px;
+                color: #333333;
+              }
+              textarea {
+                width: 100%;
+                height: 120px;
+                padding: 10px;
+                font-size: 16px;
+                border: 1px solid #ccd0d5;
+                border-radius: 4px;
+                resize: vertical;
+              }
+              button {
+                margin-top: 15px;
+                padding: 10px 20px;
+                font-size: 16px;
+                background-color: #3e4c59;
+                color: #ffffff;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+              }
+              button:hover {
+                background-color: #2c3742;
+              }
+              .message {
+                margin-top: 20px;
+                font-size: 16px;
+                color: #d9534f;
+              }
+            </style>
+          </head>
+          <body>
+            <header>
+              <h1>Ukrainian→English Translator</h1>
+            </header>
+            <div class="container">
+              <h1>Enter your Ukrainian sentence below</h1>
+              <form action="/translate" method="post">
+                <textarea name="text" placeholder="Enter a Ukrainian sentence…"></textarea><br>
+                <button type="submit">Translate</button>
+              </form>
+              <div class="message">Error: Empty input. Please enter a sentence.</div>
+            </div>
+          </body>
+        </html>
+        """
     inputs = tokenizer(text, return_tensors="pt")
     inputs = {k: v.to(device) for k, v in inputs.items()}
     with torch.no_grad():
         output_ids = model.generate(**inputs, max_length=128)
     translation = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
     return f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>Переклад готовий</title>
+        <title>Ukrainian→English Translator</title>
+        <style>
+          body {{
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+          }}
+          header {{
+            background-color: #3e4c59;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            color: #ffffff;
+          }}
+          .container {{
+            max-width: 700px;
+            width: 100%;
+            padding: 20px;
+            margin-top: 40px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+          }}
+          h1 {{
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333333;
+          }}
+          textarea {{
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccd0d5;
+            border-radius: 4px;
+            resize: vertical;
+          }}
+          button {{
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3e4c59;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          }}
+          button:hover {{
+            background-color: #2c3742;
+          }}
+          .result {{
+            margin-top: 20px;
+          }}
+          .result p {{
+            font-size: 16px;
+            color: #222222;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+          }}
+        </style>
       </head>
       <body>
-        <h1>Оригінал:</h1>
-        <p>{text}</p>
-        <h1>Переклад:</h1>
-        <p><strong>{translation}</strong></p>
-        <a href="/translate">← Назад</a>
+        <header>
+          <h1>Ukrainian→English Translator</h1>
+        </header>
+        <div class="container">
+          <h1>Enter your Ukrainian sentence below</h1>
+          <form action="/translate" method="post">
+            <textarea name="text" placeholder="Enter a Ukrainian sentence…">{text}</textarea><br>
+            <button type="submit">Translate</button>
+          </form>
+          <div class="result">
+            <h2>Translation:</h2>
+            <p>{translation}</p>
+          </div>
+        </div>
       </body>
     </html>
     """
 
-
-# ─── 7. POST /translate: JSON-ендпоінт для клієнтів ────────────────────────────
-@app.post("/translate")
-async def translate_json(req: TranslationRequest):
-    if not req.text.strip():
-        raise HTTPException(status_code=400, detail="Empty text")
-    inputs = tokenizer(req.text, return_tensors="pt")
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    with torch.no_grad():
-        output_ids = model.generate(**inputs, max_length=128)
-    translation = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-    return {"translation": translation}
-
-
-# ─── 8. Синхронізація: EN⇆UA слова ─────────────────────────────────────────────
 @lru_cache(maxsize=1)
 def load_word_dict() -> dict[str, list[str]]:
     csv_file = Path("data/production/uatoeng.csv")
@@ -129,13 +317,10 @@ def load_word_dict() -> dict[str, list[str]]:
                 res.setdefault(en, []).append(ua_word)
     return res
 
-
 @app.get("/sync-en-ua-words")
 async def sync_en_ua_words():
     return load_word_dict()
 
-
-# ─── 9. Синхронізація речень ─────────────────────────────────────────────────
 @lru_cache(maxsize=1)
 def load_sentence_dict() -> dict[str, list[str]]:
     csv_file = Path("data/production/ua_to_en_sentence.csv")
@@ -144,13 +329,10 @@ def load_sentence_dict() -> dict[str, list[str]]:
     df = pd.read_csv(csv_file)
     return {row[0]: [row[1]] for _, row in df.iterrows()}
 
-
 @app.get("/sync-sentences")
 async def sync_sentences():
     return load_sentence_dict()
 
-
-# ─── 10. Локальний запуск через Uvicorn ───────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=3002)

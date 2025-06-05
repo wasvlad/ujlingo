@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Script to train a Byte-Pair Encoding (BPE) tokenizer on the Ukrainian-English dataset,
 then save the tokenizer and provide basic evaluation (vocab size, sample tokenization).
@@ -23,7 +22,6 @@ def train_tokenizer(
     if special_tokens is None:
         special_tokens = ["<pad>", "<s>", "</s>", "<unk>", "<mask>"]
 
-    # Load training sentences
     df_train = pd.read_csv(train_file)
     if 'Ukrainian' not in df_train.columns or 'English' not in df_train.columns:
         raise ValueError("Train file must contain 'Ukrainian' and 'English' columns")
@@ -32,13 +30,11 @@ def train_tokenizer(
         s for s in pd.concat([df_train['Ukrainian'], df_train['English']], axis=0).tolist()
     )
 
-    # Initialize and train tokenizer
     tokenizer = Tokenizer(models.BPE())
     tokenizer.pre_tokenizer = pre_tokenizers.Whitespace()
     trainer = trainers.BpeTrainer(vocab_size=vocab_size, special_tokens=special_tokens)
     tokenizer.train_from_iterator(iterator, trainer=trainer)
 
-    # Post-processing: Add start/end tokens
     tokenizer.post_processor = processors.TemplateProcessing(
         single="<s> $A </s>",
         pair="<s> $A </s> <s> $B </s>",
@@ -48,7 +44,6 @@ def train_tokenizer(
         ],
     )
 
-    # Save tokenizer files
     os.makedirs(output_dir, exist_ok=True)
     tokenizer.save(os.path.join(output_dir, "tokenizer.json"))
     print(f"Tokenizer trained and saved to {output_dir}")
@@ -94,18 +89,14 @@ def compute_tokenization_stats(tokenizer, sentences):
 
 
 if __name__ == "__main__":
-    # Project root assumed as current working directory
     train_path = os.path.join(os.getcwd(), "data", "splits10k", "train.csv")
     val_path = os.path.join(os.getcwd(), "data", "splits10k", "validation.csv")
 
-    # Train tokenizer
     tokenizer = train_tokenizer(train_path, vocab_size=30000, output_dir=os.path.join(os.getcwd(), "data", "tokenizer"))
 
-    # Prepare samples for evaluation (use validation set)
     df_val = pd.read_csv(val_path)
     sentences = df_val['Ukrainian'].tolist() + df_val['English'].tolist()
 
-    # Evaluate
     evaluate_tokenizer(tokenizer, sentences, num_samples=5)
 
 
