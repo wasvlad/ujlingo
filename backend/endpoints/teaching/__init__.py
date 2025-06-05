@@ -68,6 +68,12 @@ async def custom_sentence_test(data: CustomSentenceTest, user: User = Depends(va
         response.raise_for_status()
         response_data = response.json()
     translation = response_data["translation"]
+    if translation[-1] in [",", ".", "!", "?"]:
+        last = translation[-1]
+        translation = translation[:-1]
+        while translation[-1] == " ":
+            translation = translation[:-1]
+        translation += last
     sentence_uk_bd = Sentence(sentence=uk_sentence)
     sentence_tr_bd = Sentence(sentence=translation)
     translation = SentenceTranslation()
