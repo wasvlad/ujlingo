@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (resp.ok) {
         localStorage.setItem("customSentence", sentence);
+        localStorage.setItem("currentTestKey", "custom");
         window.location.href = `/html/test.html?test=custom`;
       } else {
         alert(data.detail || `Error: ${resp.status}`);

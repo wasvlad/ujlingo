@@ -6,7 +6,9 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY data data
+COPY data/production data/production
+COPY data/uk_en_translation_model data/uk_en_translation_model
+
 COPY main.py main.py
 
 ENV MODEL_PATH=/app/data/uk_en_translation_model
