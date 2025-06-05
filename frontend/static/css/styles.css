@@ -135,3 +135,26 @@ h2 {
   color: #e63946;
   transition: color 0.2s;
 }
+
+    .custom-sentence-container {
+      max-width: 600px;
+      margin: 20px auto 0;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .custom-sentence-container input[type="text"] {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      font-size: 1rem;
+      border: 2px solid #418041;
+      border-radius: 5px;
+      background-color: rgba(255,255,255,0.13);
+      color: #418041;
+      transition: border-color 0.3s, background-color 0.3s;
+    }
+    .custom-sentence-container input[type="text"]:focus {
+      outline: none;
+      border-color: #2a9d8f;
+      background-color: rgba(42,157,143,0.1);
+    }

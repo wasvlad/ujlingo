@@ -5,7 +5,8 @@ const INIT_ENDPOINTS = {
   "strong-words":     "/api/teaching/tests/words/strong-knowledge",
   "new-sentences":    "/api/teaching/tests/sentences/new",
   "weak-sentences":   "/api/teaching/tests/sentences/weak-knowledge",
-  "strong-sentences": "/api/teaching/tests/sentences/strong-knowledge"
+  "strong-sentences": "/api/teaching/tests/sentences/strong-knowledge",
+  "custom":           "/api/teaching/custom_sentence_test"
 };
 
 function getTestKey() {
@@ -21,8 +22,14 @@ let initialized = false;
 
 async function doInit() {
   if (initialized) return;
-  const key       = getTestKey();
+
+  const key = getTestKey();
   const storedKey = localStorage.getItem("currentTestKey");
+
+  if (storedKey && storedKey === key) {
+    initialized = true;
+    return;
+  }
 
   if (storedKey && storedKey !== key) {
     throw new Error("Already running");
@@ -31,12 +38,27 @@ async function doInit() {
   const endpoint = INIT_ENDPOINTS[key];
   if (!endpoint) throw new Error("Unknown test: " + key);
 
-  console.log("➤ Initializing test of type:", key, "via", endpoint);
-  const resp = await fetch(endpoint, {
+  let fetchOptions = {
     method: "POST",
-    credentials: "include"
-  });
-  const data = await resp.json();
+    credentials: "include",
+    headers: { "Content-Type": "application/json" }
+  };
+
+  if (key === "custom") {
+    const sentence = localStorage.getItem("customSentence");
+    if (!sentence) {
+      throw new Error("No custom sentence stored");
+    }
+    fetchOptions.body = JSON.stringify({ sentence });
+  }
+
+  const resp = await fetch(endpoint, fetchOptions);
+  let data;
+  try {
+    data = await resp.json();
+  } catch (_) {
+    data = {};
+  }
   console.log("Init response:", resp.status, data);
 
   if (resp.ok) {
@@ -64,9 +86,7 @@ async function doInit() {
 function buildSentence(tokens) {
   return tokens.reduce((sentence, token, i) => {
     if (i === 0) return token;
-    return /^[.,!?;:]$/.test(token)
-      ? sentence + token
-      : sentence + " " + token;
+    return /^[.,!?;:]$/.test(token) ? sentence + token : sentence + " " + token;
   }, "");
 }
 
@@ -81,11 +101,10 @@ async function loadQuestion() {
   } catch (initErr) {
     const storedKey = localStorage.getItem("currentTestKey");
     if (initErr.message === "No questions") {
-      const key        = getTestKey();
-      const [prefix, suffix] = key.split("-");
+      const [prefix, suffix] = getTestKey().split("-");
       qText.textContent = `Before going to ${prefix} ${suffix} you should try new ${suffix}.`;
     } else if (initErr.message === "Already running") {
-      const activeKey  = storedKey || getTestKey();
+      const activeKey   = storedKey || getTestKey();
       const humanActive = humanizeKey(activeKey);
       qText.textContent = `You should complete ${humanActive} test before starting another.`;
     } else {
@@ -104,7 +123,6 @@ async function loadQuestion() {
       credentials: "include"
     });
     const data = await res.json();
-    console.log("GET /get_question →", res.status, data);
 
     if (!res.ok || data.message === "Test is finished") {
       qText.textContent = data.message || "Test is finished";
@@ -137,6 +155,7 @@ async function loadQuestion() {
       <div id="selected-container" class="selected-tokens"></div>
       <input type="hidden" id="answer-input" name="answer" required>
     `;
+
     const container   = document.getElementById("tokens-container");
     const selectedDiv = document.getElementById("selected-container");
     const answerInput = document.getElementById("answer-input");
@@ -188,7 +207,6 @@ async function loadQuestion() {
         container.appendChild(btn);
       });
     }
-
   } catch (err) {
     console.error("Load question error:", err);
     qText.textContent = "Error loading question";
@@ -220,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({ answer: rawAnswer })
       });
       const result = await res.json();
-      console.log("POST /answer_question →", res.status, result);
 
       if (res.ok) {
         if (result.is_correct) {
