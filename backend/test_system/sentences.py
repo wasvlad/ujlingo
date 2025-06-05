@@ -13,6 +13,9 @@ class TranslationQuestion(QuestionInterface):
         self._translation = translation
 
     def give_answer(self, answer: str) -> Result:
+        if answer == self._translation.sentence_translated.sentence:
+            result = Result(is_correct=True, correct_answer=self._translation.sentence_translated.sentence)
+            return result
         db = next(get_db())
         sentence = db.query(Sentence).filter(Sentence.sentence == answer).first()
         if sentence is None:

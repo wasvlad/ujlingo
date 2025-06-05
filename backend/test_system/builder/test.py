@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 from database.models import User
 from test_system.caching import CachingInterface
-from test_system.main import Test, QuestionProxy
+from test_system.main import Test, QuestionProxy, QuestionInterface
 from test_system.builder.question import get_new_word_translations, build_msq_question, \
     get_word_translations_weak_knowledge, \
     get_word_translations_strong_knowledge, get_new_sentence_translations, \
@@ -79,6 +79,9 @@ class TestBuilder:
                 question = sentences.TranslationQuestion(translation)
             question = QuestionProxy(question, sentences.TranslationKnowledgeSaver(self.__user, translation))
             self.__questions.append(question)
+
+    def add_custom(self, question: QuestionProxy | QuestionInterface):
+        self.__questions.append(question)
 
     def build(self, caching_class: Type[CachingInterface] | None = None) -> Test:
         if len(self.__questions) == 0:
