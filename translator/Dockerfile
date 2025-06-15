@@ -7,7 +7,9 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY data/production data/production
-COPY data/marian_finetuned_uk_en_v1/marian_finetuned_uk_en_v1
+COPY data/marian_finetuned_uk_en_v1/ data/marian_finetuned_uk_en_v1
+
+COPY main.py main.py
 
 ENV MODEL_PATH=/app/data/marian_finetuned_uk_en_v1
 

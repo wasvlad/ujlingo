@@ -2,8 +2,6 @@ from random import randint
 
 from typing import Type
 
-from fastapi import HTTPException
-
 from database.models import User
 from test_system.caching import CachingInterface
 from test_system.main import Test, QuestionProxy
@@ -81,7 +79,5 @@ class TestBuilder:
             self.__questions.append(question)
 
     def build(self, caching_class: Type[CachingInterface] | None = None) -> Test:
-        if len(self.__questions) == 0:
-            raise HTTPException(status_code=400, detail="No questions")
         test = Test(self.__user, self.__questions, caching_class)
         return test
