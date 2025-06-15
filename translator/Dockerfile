@@ -7,11 +7,11 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY data/production data/production
-COPY data/uk_en_translation_model data/uk_en_translation_model
+COPY data/marian_finetuned_uk_en_v1/ data/marian_finetuned_uk_en_v1
 
 COPY main.py main.py
 
-ENV MODEL_PATH=/app/data/uk_en_translation_model
+ENV MODEL_PATH=/app/data/marian_finetuned_uk_en_v1
 
 EXPOSE 3002
 

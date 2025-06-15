@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 translate_ukr_to_eng_resumeable.py
@@ -15,21 +14,18 @@ from pathlib import Path
 from googletrans import Translator
 from tqdm import tqdm
 
-# 1) Шляхи
 BASE  = Path(__file__).resolve().parents[2] / "data" / "production"
 IN_F  = BASE / "ukr_sentences_reformed.tsv"
 OUT_F = BASE / "ukr_sentences_translated.tsv"
 
-# 2) Читаємо вхідний TSV
 df_src = pd.read_csv(IN_F, sep="\t", dtype=str)
 
-# 3) Підвантажуємо прогрес або ініціалізуємо новий стовпець
 if OUT_F.exists():
     df_out = pd.read_csv(
         OUT_F,
         sep="\t",
         dtype=str,
-        keep_default_na=False,    # важливо, щоб порожні залишалися порожніми
+        keep_default_na=False,
     )
     if len(df_out) != len(df_src):
         raise ValueError(
@@ -40,7 +36,6 @@ else:
     df_out = df_src.copy()
     df_out["eng"] = ""
 
-# 4) Ініціалізуємо перекладач
 translator = Translator()
 
 def translate_with_retry(text, retries=3, delay=1.0):
@@ -52,17 +47,15 @@ def translate_with_retry(text, retries=3, delay=1.0):
             time.sleep(delay * i)
     return ""
 
-# 5) Знаходимо перший незаповнений рядок
 mask = df_out["eng"].isna() | (df_out["eng"].str.strip() == "")
 if not mask.any():
     print("🎉 Всі рядки вже перекладено.")
     exit()
 
-start_idx = mask.idxmax()  # індекс першого True в масці
+start_idx = mask.idxmax()
 n = len(df_out)
 print(f"🔄 Починаємо з рядка #{start_idx} із {n}")
 
-# 6) Основний цикл
 try:
     for idx in tqdm(range(start_idx, n), desc="Translating"):
         ukr_text = df_out.at[idx, "ukr"] or ""
@@ -76,13 +69,12 @@ try:
                 tr = translate_with_retry(ukr_text)
             df_out.at[idx, "eng"] = tr
 
-        # зберігаємо відразу після кожного рядка
         df_out.to_csv(
             OUT_F,
             sep="\t",
             index=False,
             encoding="utf-8",
-            na_rep="",  # порожні залишаються порожніми
+            na_rep="",
         )
         time.sleep(0.1)
 

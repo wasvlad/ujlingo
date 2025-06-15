@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import csv, re
 from pathlib import Path
 import pandas as pd
@@ -16,7 +15,7 @@ df = (
     pd.read_csv(
         src_tsv,
         sep="\t",
-        header=0,                # зніміть, якщо немає заголовка
+        header=0,
         quoting=csv.QUOTE_NONE,
         on_bad_lines="skip",
         engine="python",

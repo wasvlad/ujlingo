@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import csv, random
 from pathlib import Path
 from collections import Counter

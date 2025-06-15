@@ -4,7 +4,6 @@ import re
 import pandas as pd
 import spacy
 
-#  Завантажуємо spaCy-моделі, лишаємо тільки токенізатор
 nlp_uk = spacy.load("uk_core_news_sm", disable=["parser","tagger","attribute_ruler","lemmatizer","ner"])
 nlp_en = spacy.load("en_core_web_sm",   disable=["parser","tagger","attribute_ruler","lemmatizer","ner"])
 
