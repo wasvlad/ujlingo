@@ -17,8 +17,32 @@
     <div class="shape"></div>
   </div>
 
-  <h2 id="welcome">HomePage (In progress)</h2>
-  <button id="start-test-btn" class="main-btn">Start Test</button>
+  <h2 id="welcome">Choose test:</h2>
+
+  <div class="test-select-group">
+    <label for="test-select">Test type:</label>
+    <select id="test-select" class="form-control">
+      <option value="">-- choose --</option>
+      <option value="random-words">Random Words</option>
+      <option value="new-words">New Words</option>
+      <option value="weak-words">Weak Words</option>
+      <option value="strong-words">Strong Words</option>
+      <option value="new-sentences">New Sentences</option>
+      <option value="weak-sentences">Weak Sentences</option>
+      <option value="strong-sentences">Strong Sentences</option>
+    </select>
+  </div>
+
+  <button id="start-test-btn" class="main-btn" disabled>Start test</button>
+
+  <div class="custom-sentence-container">
+    <input
+      type="text"
+      id="custom-sentence-input"
+      placeholder="Build your custom sentence…"
+    />
+    <button id="start-custom-test-btn" disabled>Start custom test</button>
+  </div>
 
   <script src="../static/js/start-test.js" type="module"></script>
   <script src="../static/js/validate-session.js"></script>
